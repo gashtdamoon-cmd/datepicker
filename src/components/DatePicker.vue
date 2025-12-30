@@ -1241,7 +1241,7 @@
       },
       changeMonth() {
         this.preventChangedMonth();
-        const el = (this.$refs.pdpMain as HTMLElement);
+        const el = this.$refs.pdpMain as HTMLElement;
         const currentScrollTop = el.scrollTop;
         if (currentScrollTop > this.lastScrollTop) {
           this.shouldPrevent = false;
