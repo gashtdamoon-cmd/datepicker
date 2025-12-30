@@ -122,7 +122,7 @@ context('date', () => {
       cy.get('.pdp-input').focus();
       cy.get('.pdp-shortcut')
         .should('exist')
-        .contains('هم اکنون')
+        .contains('برو به امروز')
         .should('exist')
         .get('.pdp-shortcut')
         .contains('دیروز')
@@ -154,7 +154,7 @@ context('datetime', () => {
       cy.get('.pdp-input').focus();
       cy.get('.pdp-shortcut')
         .should('exist')
-        .contains('هم اکنون')
+        .contains('برو به امروز')
         .should('exist')
         .get('.pdp-shortcut')
         .contains('دیروز')
@@ -407,7 +407,7 @@ context('time', () => {
         .contains('نیمروز')
         .should('exist')
         .get('.pdp-shortcut')
-        .contains('هم اکنون')
+        .contains('برو به امروز')
         .should('exist')
         .click();
 

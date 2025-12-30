@@ -26,13 +26,16 @@ export const Core = {
       },
       translations: {
         label: 'شمسی',
-        text: 'تقویم شمسی',
+        text: 'تقویم میلادی',
         prevMonth: 'ماه قبل',
         nextMonth: 'ماه بعد',
-        now: 'هم اکنون',
+        now: 'برو به امروز',
         submit: 'تایید',
+        arrivalDate: 'ورود',
+        departureDate: 'خروج',
         /* use in shourcuts */
         // date-single
+        today: 'امروز',
         yesterday: 'دیروز',
         tomorrow: 'فردا',
         firstOfWeek: 'اول هفته',
@@ -45,6 +48,7 @@ export const Core = {
         // time-single
         oneHourAgo: 'یک ساعت قبل',
         oneHourLater: 'یک ساعت بعد',
+        night: 'شب',
         midnight: 'نیمه شب',
         midday: 'نیمروز',
         // time-range
@@ -79,13 +83,16 @@ export const Core = {
       },
       translations: {
         label: 'میلادی',
-        text: 'Gregorian Calendar',
+        text: 'تقویم شمسی',
         prevMonth: 'Previous Month',
         nextMonth: 'Next Month',
-        now: 'Now',
-        submit: 'Submit',
+        now: 'برو به امروز',
+        submit: 'تایید',
+        arrivalDate: 'ورود',
+        departureDate: 'خروج',
         /* use in shourcuts */
         // date-single
+        today: 'امروز',
         yesterday: 'Yesterday',
         tomorrow: 'Tomorrow',
         firstOfWeek: 'First of Week',
@@ -98,6 +105,7 @@ export const Core = {
         // time-single
         oneHourAgo: 'One Hour ago',
         oneHourLater: 'One Hour later',
+        night: 'شب',
         midnight: 'Midnight',
         midday: 'Midday',
         // time-range

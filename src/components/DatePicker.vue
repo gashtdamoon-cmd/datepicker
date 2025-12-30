@@ -30,22 +30,47 @@
             <PDPIcon :icon="type" width="23" height="23"></PDPIcon>
           </slot>
         </div>
-        <input
-          ref="inputs"
-          v-model="displayValue[index]"
-          type="text"
-          autocomplete="off"
-          v-bind="attrs[input]"
-          @focus="showPicker('input', index)"
-          @keydown="selectWithArrow" /><button
-          v-if="clearable"
-          :key="`clear-${input}`"
-          class="pdp-clear"
-          type="button"
-          @click="clear(input)"
-        >
-          <slot name="clear"><PDPIcon icon="clear"></PDPIcon></slot></button
-      ></template>
+        <div class="fieldContainer" @click="showPicker('input', index)">
+          <span ref="placeHolder" class="placeHolder">{{ placeholder }}</span>
+          <div ref="selectedDatesText" class="selectedDatesText hidden">
+            <div
+              v-if="mode == 'range' && selectedDates.length == 2"
+              class="truncate max-w-[200px]"
+              :title="`${arrivalDateText ?? lang.translations.arrivalDate}:  ${selectedDates[0].toString(formats.display)}  |  ${departureDateText ?? lang.translations.departureDate}:  ${selectedDates[1].toString(formats.display)}`"
+            >
+              {{
+                `${arrivalDateText ?? lang.translations.arrivalDate}:  ${selectedDates[0].toString(formats.display)}  |  ${departureDateText ?? lang.translations.departureDate}:  ${selectedDates[1].toString(formats.display)}`
+              }}
+            </div>
+            <div
+              v-if="mode == 'single' && selectedDates.length == 1"
+              class="truncate max-w-[200px]"
+              :title="`${arrivalDateText ?? lang.translations.arrivalDate}:  ${selectedDates[0].toString(formats.display)}`"
+            >
+              {{
+                `${arrivalDateText ?? lang.translations.arrivalDate}:  ${selectedDates[0].toString(formats.display)}`
+              }}
+            </div>
+          </div>
+          <input
+            ref="inputs"
+            v-model="displayValue[index]"
+            type="hidden"
+            autocomplete="off"
+            v-bind="attrs[input]"
+            readonly="true"
+            @keydown="selectWithArrow"
+          /><button
+            v-if="clearable"
+            :key="`clear-${input}`"
+            class="pdp-clear"
+            type="button"
+            @click="clear(input)"
+          >
+            <slot name="clear"><PDPIcon icon="clear"></PDPIcon></slot>
+          </button>
+        </div>
+      </template>
     </div>
     <slot name="after"></slot>
     <PDPAlt
@@ -55,7 +80,7 @@
       :dates="submitedValue"
     />
     <div v-if="showDatePicker">
-      <div class="pdp-overlay" @click="showDatePicker = false"></div>
+      <div class="pdp-overlay" @click="hideDatePicker()"></div>
       <div v-bind="attrs.picker" ref="pdpPicker">
         <div class="pdp-auto">
           <div v-if="type.includes('date')">
@@ -87,24 +112,53 @@
               </li>
             </ul>
           </div>
-          <div v-if="type.includes('date')" class="pdp-header">
+          <div v-if="type.includes('date')" class="pdp-header md:h-[109px]">
             <div v-if="locale.includes(',')" class="top">
-              <div>{{ lang.translations.text }}</div>
-              <button type="button" :tabindex="tabIndex" @click="changeLocale">
-                {{ nextLocale }}
+              <button
+                v-if="checkDate(core, 'date')"
+                class="pdp-today boldTitle"
+                type="button"
+                :tabindex="tabIndex"
+                @click="goToToday"
+              >
+                {{ nowBtnText ?? lang.translations.now }}
+              </button>
+              <button
+                type="button"
+                :tabindex="tabIndex"
+                :class="color == undefined ? 'changeLocaleBtn' : ''"
+                @click="changeLocale"
+              >
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M21 11.5V8.8C21 7.11984 21 6.27976 20.673 5.63803C20.3854 5.07354 19.9265 4.6146 19.362 4.32698C18.7202 4 17.8802 4 16.2 4H7.8C6.11984 4 5.27976 4 4.63803 4.32698C4.07354 4.6146 3.6146 5.07354 3.32698 5.63803C3 6.27976 3 7.11984 3 8.8V17.2C3 18.8802 3 19.7202 3.32698 20.362C3.6146 20.9265 4.07354 21.3854 4.63803 21.673C5.27976 22 6.11984 22 7.8 22H12.5M21 10H3M16 2V6M8 2V6M18 21V15M15 18H21"
+                    :stroke="color == undefined ? '#2E90FA' : ''"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+                {{ langBtnText ?? lang.translations.text }}
               </button>
             </div>
-            <div class="bottom">
+            <div class="bottom max-md:hidden h-[50px]">
               <button
                 tabindex="-1"
                 type="button"
                 :class="[
                   'pdp-arrow',
                   {
-                    disabled: !checkDate(onDisplay.clone().subMonth(), 'month'),
+                    disabled: shouldPrevent,
                   },
                 ]"
                 :title="lang.translations.prevMonth"
+                :disabled="shouldPrevent"
                 @click="changeSelectedMonth('sub')"
               >
                 <slot name="right-arrow"
@@ -116,27 +170,29 @@
                   ></PDPArrow
                 ></slot>
               </button>
-              <div>
-                <div v-for="(item, i) in columnCount" :key="i">
-                  <button
-                    class="pdp-month"
-                    type="button"
-                    tabindex="-1"
-                    @click="showPart('month')"
-                  >
-                    {{
-                      months[onDisplay.clone().addMonth(i).month()].label
-                    }}</button
-                  ><button
-                    class="pdp-year"
-                    type="button"
-                    tabindex="-1"
-                    @click="showPart('year')"
-                  >
-                    {{ onDisplay.clone().addMonth(i).year() }}
-                  </button>
+              <transition :name="transitionName" mode="out-in">
+                <div :key="currentMonthKey">
+                  <div v-for="(item, i) in columnCount" :key="i">
+                    <button
+                      class="pdp-month boldTitle"
+                      type="button"
+                      tabindex="-1"
+                      @click="showPart('month')"
+                    >
+                      {{
+                        months[onDisplay.clone().addMonth(i).month()].label
+                      }}</button
+                    ><button
+                      class="pdp-year boldTitle"
+                      type="button"
+                      tabindex="-1"
+                      @click="showPart('year')"
+                    >
+                      {{ onDisplay.clone().addMonth(i).year() }}
+                    </button>
+                  </div>
                 </div>
-              </div>
+              </transition>
               <button
                 tabindex="-1"
                 type="button"
@@ -160,46 +216,103 @@
               </button>
             </div>
           </div>
-          <div ref="pdpMain" class="pdp-main">
+          <div ref="pdpMain" class="pdp-main" @scroll="changeMonth()">
             <div v-if="type.includes('date')" class="pdp-date">
-              <div
-                v-for="(item, i) in columnCount"
-                :key="i"
-                class="pdp-column"
-                :data-column="i"
-              >
-                <div class="pdp-week">
-                  <div
-                    v-for="(weekday, index) in lang.weekdays"
-                    :key="index"
-                    class="pdp-weekday"
-                  >
-                    {{ weekday }}
-                  </div>
-                </div>
-                <div class="pdp-days">
-                  <div v-for="(week, wIndex) in monthDays[i]" :key="wIndex">
-                    <div
-                      v-for="day in week"
-                      :key="day.raw ? day.raw.toString() : undefined"
-                      :class="[
-                        'pdp-day',
-                        { empty: day.empty },
-                        { friday: day.friday },
-                        { today: day.today },
-                        { 'start-range': day.startRange },
-                        { 'end-range': day.endRange },
-                        { disabled: day.disabled },
-                        { 'in-range': day.inRange },
-                      ]"
-                      :value="day.val"
-                      @click="selectDate(day.raw, 'date')"
-                    >
-                      {{ day.val }}
+              <template v-for="(item, i) in columnCount" :key="i">
+                <transition :name="transitionName" mode="out-in">
+                  <div :key="currentMonthKey" class="md:w-[300px] lg:w-[340px]">
+                    <div class="pdp-header md:hidden">
+                      <div class="bottom">
+                        <div>
+                          <div>
+                            <button
+                              class="pdp-month boldTitle"
+                              type="button"
+                              tabindex="-1"
+                            >
+                              {{
+                                months[onDisplay.clone().addMonth(i).month()]
+                                  .label
+                              }}</button
+                            ><button
+                              class="pdp-year boldTitle"
+                              type="button"
+                              tabindex="-1"
+                            >
+                              {{ onDisplay.clone().addMonth(i).year() }}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="pdp-column" :data-column="i">
+                      <div class="pdp-week textLightGray">
+                        <div
+                          v-for="(weekday, index) in lang.weekdays"
+                          :key="index"
+                          class="pdp-weekday"
+                        >
+                          {{ weekday }}
+                        </div>
+                      </div>
+                      <div class="pdp-days textDominant">
+                        <div
+                          v-for="(week, wIndex) in monthDays[i]"
+                          :key="wIndex"
+                          class="max-md:flex max-md:justify-between h-[50px]"
+                        >
+                          <div
+                            v-for="day in week"
+                            :key="day.raw ? day.raw.toString() : undefined"
+                            :class="[
+                              'pdp-day',
+                              { empty: day.empty },
+                              { friday: day.friday && color != undefined },
+                              {
+                                'friday textError':
+                                  day.friday && color == undefined,
+                              },
+                              {
+                                'vacation friday':
+                                  showVacation &&
+                                  day.val == 20 &&
+                                  color != undefined,
+                              },
+                              {
+                                'vacation textError':
+                                  showVacation &&
+                                  day.val == 20 &&
+                                  color == undefined,
+                              },
+                              { today: day.today },
+                              { 'start-range': day.startRange },
+                              { 'end-range': day.endRange },
+                              { disabled: day.disabled },
+                              { 'in-range': day.inRange },
+                            ]"
+                            :value="day.val"
+                            @click="selectDate(day.raw, 'date')"
+                          >
+                            <div>
+                              {{
+                                day.today
+                                  ? (todayText ?? lang.translations.today)
+                                  : day.val
+                              }}
+                            </div>
+                            <div
+                              v-if="showPrice && !day.disabled"
+                              class="dayPrice"
+                            >
+                              8500
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
+                </transition>
+              </template>
             </div>
             <div v-if="type.includes('time')" class="pdp-time inline">
               <div v-if="type == 'time'" class="pdp-column">
@@ -290,36 +403,58 @@
               </div>
             </div>
           </div>
-          <div class="pdp-footer">
+          <div class="pdp-footer rtl">
             <div>
               <slot name="footer"></slot>
-              <small v-if="selectedDates[0]">
-                {{ selectedDates[0].toString(formats.display) }}
-              </small>
-              <small v-if="selectedDates.length == 2">
-                - {{ selectedDates[1].toString(formats.display) }}
-              </small>
+              <div>
+                <span class="boldTitle">{{
+                  arrivalDateText ?? lang.translations.arrivalDate
+                }}</span>
+                <small v-if="selectedDates[0]" class="smallContent">
+                  {{ selectedDates[0].toString(formats.display) }}
+                </small>
+              </div>
+              <div v-if="mode == 'range'">|</div>
+              <div v-if="mode == 'range'">
+                <span class="boldTitle">{{
+                  departureDateText ?? lang.translations.departureDate
+                }}</span>
+                <small v-if="selectedDates.length == 2" class="smallContent">
+                  {{ selectedDates[1].toString(formats.display) }}
+                </small>
+              </div>
             </div>
-            <div>
+            <div class="max-md:min-w-full">
               <button
-                v-if="checkDate(core, 'date')"
-                class="pdp-today"
-                type="button"
-                :tabindex="tabIndex"
-                @click="goToToday"
-              >
-                {{ lang.translations.now }}</button
-              ><button
                 v-if="
                   !autoSubmit &&
                   !selectedDates.some((date) => isInDisable(date))
                 "
-                class="pdp-submit"
+                ref="pdpSubmit"
+                class="pdp-submit max-md:min-w-full"
                 type="button"
                 :tabindex="tabIndex"
                 @click="submitDate()"
               >
-                {{ lang.translations.submit }}
+                {{ SubmitText ?? lang.translations.submit }}&nbsp;
+                <span v-if="selectedDates.length > 1">
+                  {{
+                    Math.round(
+                      (((new Date(
+                        selectedDates[1].d.year,
+                        selectedDates[1].d.month - 1,
+                        selectedDates[1].d.date,
+                      ) as any) -
+                        new Date(
+                          selectedDates[0].d.year,
+                          selectedDates[0].d.month - 1,
+                          selectedDates[0].d.date,
+                        )) as any) / 86400000,
+                    ) +
+                    ' ' +
+                    lang.translations.night
+                  }}
+                </span>
               </button>
             </div>
           </div>
@@ -393,6 +528,37 @@
     },
     inheritAttrs: false,
     props: {
+      placeholder: {
+        type: String,
+        default: 'تاریخ (ورود و خروج)',
+      },
+      arrivalDateText: {
+        type: String,
+      },
+      departureDateText: {
+        type: String,
+      },
+      nowBtnText: {
+        type: String,
+      },
+      langBtnText: {
+        type: String,
+      },
+      todayText: {
+        type: String,
+      },
+      SubmitText: {
+        type: String,
+      },
+      showVacation: {
+        type: Boolean,
+        default: true,
+      },
+      showPrice: {
+        type: Boolean,
+        default: false,
+      },
+
       /**
        * the format of the model value
        * @type String
@@ -512,7 +678,7 @@
        * 		is not specified, the default value it's 2
        */
       column: {
-        default: () => ({ 576: 1 }),
+        default: () => ({ 576: 2 }),
         type: [Number, Object] as PropType<number | Record<number, number>>,
       },
 
@@ -522,7 +688,7 @@
        * @type Boolean
        */
       autoSubmit: {
-        default: true,
+        default: false,
         type: Boolean,
       },
 
@@ -548,7 +714,7 @@
        * @since 2.0.0
        */
       locale: {
-        default: 'fa',
+        default: 'fa,en',
         type: String,
       },
 
@@ -645,7 +811,9 @@
         onDisplay: undefined as PersianDate | undefined,
         fromDate: undefined as PersianDate | undefined,
         toDate: undefined as PersianDate | undefined,
+        slideDirection: null as string | null, // 'left' | 'right' | null
         selectedDates: [] as PersianDate[],
+        confirmSelectedDates: false,
         selectedTimes: [] as PersianDate[],
         showDatePicker: false,
         showYearSelect: false,
@@ -659,6 +827,9 @@
         currentLocale: this.locale.split(',')[0],
         interval: null as ReturnType<typeof setInterval> | null,
         submitedValue: [] as PersianDate[],
+        todayObj: null as PersianDate | object | null,
+        shouldPrevent: false,
+        lastScrollTop: 0,
       };
     },
     computed: {
@@ -910,6 +1081,14 @@
         }
         return shortcuts;
       },
+      transitionName(): string {
+        if (this.slideDirection === 'left') return 'slide-left';
+        if (this.slideDirection === 'right') return 'slide-right';
+        return 'fade';
+      },
+      currentMonthKey(): string {
+        return `${this.onDisplay?.year()}-${this.onDisplay?.month()}`;
+      },
     },
     watch: {
       show: {
@@ -1005,8 +1184,25 @@
         this.onDisplay!.time(this.core as PersianDate);
       }
       this.showDatePicker = this.show;
+      this.todayObj = this.monthDays[0]
+        ?.flat()
+        ?.find((item) => item.today === true);
+      this.preventChangedMonth();
     },
     methods: {
+      preventChangedMonth() {
+        if (
+          (this.onDisplay != undefined &&
+            this.todayObj != undefined &&
+            this.onDisplay.year() < this.todayObj.raw.d.year) ||
+          (this.onDisplay.year() == this.todayObj.raw.d.year &&
+            this.onDisplay.month() <= this.todayObj.raw.d.month)
+        ) {
+          this.shouldPrevent = true;
+        } else {
+          this.shouldPrevent = false;
+        }
+      },
       showPart(part: CalendarPart): void {
         if (part == 'year') {
           this.showMonthSelect = false;
@@ -1033,12 +1229,34 @@
         const clone = this.onDisplay!.clone();
         if (month == 'add') {
           this.onDisplay!.addMonth();
+          this.slideDirection = 'left';
         } else if (month == 'sub') {
           this.onDisplay!.subMonth();
+          this.slideDirection = 'right';
         } else this.onDisplay!.month(month);
         if (this.checkDate(this.onDisplay, 'month'))
           this.showMonthSelect = false;
         else this.onDisplay = clone;
+        this.preventChangedMonth();
+      },
+      changeMonth() {
+        this.preventChangedMonth();
+        const el = (this.$refs.pdpMain as HTMLElement);
+        const currentScrollTop = el.scrollTop;
+        if (currentScrollTop > this.lastScrollTop) {
+          this.shouldPrevent = false;
+        }
+        this.lastScrollTop = currentScrollTop;
+        if (this.shouldPrevent) return;
+
+        const isBottom = el.scrollTop + el.clientHeight >= el.scrollHeight;
+        if (isBottom) {
+          this.changeSelectedMonth('add');
+          // el.scrollTop = el.scrollHeight - el.clientHeight - 2;
+        } else if (el.scrollTop < 1) {
+          this.changeSelectedMonth('sub');
+          // el.scrollTop = 2;
+        }
       },
       changeSelectedYear(year: number): void {
         this.onDisplay!.year(year);
@@ -1088,6 +1306,7 @@
       },
       selectDate(date: PersianDate, part: TypePart): number {
         let isValid = this.validate(date, part);
+        this.confirmSelectedDates = false;
         if (!isValid) {
           return -1;
         } else if (this.mode == 'range' && this.selectedDates.length == 1) {
@@ -1104,17 +1323,36 @@
         }
         if (this.mode == 'single') {
           this.selectedDates = [date];
+          (this.$refs.selectedDatesText as HTMLElement[])[0].classList.remove(
+            'hidden',
+          );
+          (this.$refs.pdpSubmit as HTMLElement).classList.remove('disabledBtn');
+          (this.$refs.pdpSubmit as HTMLElement).removeAttribute('disabled');
+          this.confirmSelectedDates = true;
         } else if (this.mode == 'range') {
-          (this.$refs.pdpMain as HTMLElement).addEventListener(
-            'mouseover',
-            this.selectInRangeDate,
+          (this.$refs.selectedDatesText as HTMLElement[])[0].classList.add(
+            'hidden',
           );
           if (this.selectedDates.length === 0) {
             this.selectedDates[0] = date;
             this.inputName = 'secondInput';
           } else if (this.inputName === 'secondInput') {
             this.inputName = 'firstInput';
-            if (!date.isBefore(this.selectedDates[0] as PersianDate)) {
+            if (date.isSame(this.selectedDates[0] as PersianDate)) {
+              this.confirmSelectedDates = false;
+              this.selectedDates = [];
+              (this.$refs.selectedDatesText as HTMLElement[])[0].classList.add(
+                'hidden',
+              );
+              (this.$refs.pdpSubmit as HTMLElement).classList.add(
+                'disabledBtn',
+              );
+              (this.$refs.pdpSubmit as HTMLElement).setAttribute(
+                'disabled',
+                'disabled',
+              );
+              alert('تاریخ ورود و خروج، نباید  یکسان باشند');
+            } else if (!date.isBefore(this.selectedDates[0] as PersianDate)) {
               this.selectedDates[1] = date;
             } else {
               if (this.selectedDates.length === 1)
@@ -1133,6 +1371,14 @@
               'mouseover',
               this.selectInRangeDate,
             );
+            (this.$refs.selectedDatesText as HTMLElement[])[0].classList.remove(
+              'hidden',
+            );
+            (this.$refs.pdpSubmit as HTMLElement).classList.remove(
+              'disabledBtn',
+            );
+            (this.$refs.pdpSubmit as HTMLElement).removeAttribute('disabled');
+            this.confirmSelectedDates = true;
           }
         }
 
@@ -1144,6 +1390,12 @@
             this.selectedTimes[i] = d;
             return d;
           });
+          (this.$refs.selectedDatesText as HTMLElement[])[0].classList.remove(
+            'hidden',
+          );
+          (this.$refs.pdpSubmit as HTMLElement).classList.remove('disabledBtn');
+          (this.$refs.pdpSubmit as HTMLElement).removeAttribute('disabled');
+          this.confirmSelectedDates = true;
         }
 
         this.$emit('select', date);
@@ -1167,6 +1419,7 @@
         this.$emit('update:modelValue', date);
       },
       goToToday(): void {
+        this.slideDirection = 'right';
         this.showMonthSelect = this.showYearSelect = false;
         this.onDisplay = this.core.now().clone();
         if (this.type.includes('time') && this.selectedDates.length) {
@@ -1192,6 +1445,7 @@
                 .classList.remove('tada');
             }, 1000);
           });
+        this.preventChangedMonth();
       },
       checkDate(date: unknown, part: CalendarPart | TypePart): boolean {
         let from, to;
@@ -1258,6 +1512,20 @@
         }
       },
       showPicker(el: 'icon' | 'input', index: 0 | 1): void {
+        const placeHolder = (this.$refs.placeHolder as HTMLElement[])[index];
+        placeHolder.classList.add('moveUp');
+        setTimeout(() => {
+          if (!this.confirmSelectedDates) {
+            (this.$refs.selectedDatesText as HTMLElement[])[0].classList.add(
+              'hidden',
+            );
+            (this.$refs.pdpSubmit as HTMLElement).classList.add('disabledBtn');
+            (this.$refs.pdpSubmit as HTMLElement).setAttribute(
+              'disabled',
+              'disabled',
+            );
+          }
+        }, 10);
         if (this.clickOn == 'all' || this.clickOn == el) {
           const inputName = this.inputs[index];
           if (this.dualInput) this.inputName = inputName;
@@ -1270,6 +1538,23 @@
             document.addEventListener('scroll', this.locate);
           }
         }
+        this.preventChangedMonth();
+      },
+      hideDatePicker(): void {
+        const placeHolders = this.$refs.placeHolder as HTMLElement[];
+        if (!this.confirmSelectedDates) {
+          placeHolders[0].classList.remove('moveUp');
+          this.selectedDates = [];
+          (this.$refs.selectedDatesText as HTMLElement[])[0].classList.add(
+            'hidden',
+          );
+          (this.$refs.pdpSubmit as HTMLElement).classList.add('disabledBtn');
+          (this.$refs.pdpSubmit as HTMLElement).setAttribute(
+            'disabled',
+            'disabled',
+          );
+        }
+        this.showDatePicker = false;
       },
       async selectWithArrow(e: KeyboardEvent): Promise<void> {
         //FIXME: refactor

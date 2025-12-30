@@ -85,8 +85,11 @@ export type Langs = {
       nextMonth: string;
       now: string;
       submit: string;
+      arrivalDate: string;
+      departureDate: string;
       /* use in shourcuts */
       // date-single
+      today: string;
       yesterday: string;
       tomorrow: string;
       firstOfWeek: string;
@@ -99,6 +102,7 @@ export type Langs = {
       // time-single
       oneHourAgo: string;
       oneHourLater: string;
+      night: string;
       midnight: string;
       midday: string;
       // time-range

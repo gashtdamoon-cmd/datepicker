@@ -56,27 +56,26 @@
   }
 }
 
-@keyframes tada {
+@-webkit-keyframes datepicker-pulse {
   0% {
-    transform: scale(1);
+    box-shadow: 0 0 0 0 var(--secondary-color);
   }
-  10%,
-  20% {
-    transform: scale(0.9) rotate(-3deg);
+  70% {
+    box-shadow: 0 0 0 4px var(--secondary-color);
   }
-  30%,
-  50%,
-  70%,
-  90% {
-    transform: scale(1.1) rotate(3deg);
+  to {
+    box-shadow: 0 0 0 0 var(--secondary-color);
   }
-  40%,
-  60%,
-  80% {
-    transform: scale(1.1) rotate(-3deg);
+}
+@keyframes datepicker-pulse {
+  0% {
+    box-shadow: 0 0 0 0 var(--secondary-color);
   }
-  100% {
-    transform: scale(1) rotate(0);
+  70% {
+    box-shadow: 0 0 0 4px var(--secondary-color);
+  }
+  to {
+    box-shadow: 0 0 0 0 var(--secondary-color);
   }
 }
 
@@ -100,36 +99,43 @@
   &:not(.pdp-range) .pdp-day.start-range {
     border-radius: variable.$radius !important;
     border-radius: var(--radius) !important;
+    border-radius: 50% !important;
   }
 
   &.pdp-range .pdp-picker.rtl .pdp-day.start-range {
     border-radius: 0 variable.$radius variable.$radius 0 !important;
     border-radius: 0 var(--radius) var(--radius) 0 !important;
+    border-radius: 50% !important;
   }
 
   &.pdp-range .pdp-picker.rtl .pdp-day.end-range {
     border-radius: variable.$radius 0 0 variable.$radius !important;
     border-radius: var(--radius) 0 0 var(--radius) !important;
+    border-radius: 50% !important;
   }
 
   &.pdp-range .pdp-picker.rtl .pdp-day.end-range.start-range {
     border-radius: variable.$radius !important;
     border-radius: var(--radius) !important;
+    border-radius: 50% !important;
   }
 
   &.pdp-range .pdp-picker.ltr .pdp-day.start-range {
     border-radius: variable.$radius 0 0 variable.$radius !important;
     border-radius: var(--radius) 0 0 var(--radius) !important;
+    border-radius: 50% !important;
   }
 
   &.pdp-range .pdp-picker.ltr .pdp-day.end-range {
     border-radius: 0 variable.$radius variable.$radius 0 !important;
     border-radius: 0 var(--radius) var(--radius) 0 !important;
+    border-radius: 50% !important;
   }
 
   &.pdp-range .pdp-picker.ltr .pdp-day.end-range.start-range {
     border-radius: variable.$radius !important;
     border-radius: var(--radius) !important;
+    border-radius: 50% !important;
   }
 
   &.rtl {
@@ -173,6 +179,7 @@
 
     .pdp-picker::after {
       right: 1.2rem;
+      display: none;
     }
   }
 
@@ -283,14 +290,15 @@
 
     .pdp-input {
       display: block;
-      height: calc(1.5em + 0.75rem + 2px);
-      padding: 0.375rem 0.75rem;
+      height: calc(1.5em + 0.75rem + 12px);
+      padding: 0.375rem 0 0.375rem 0.75rem;
       font-size: 1rem;
       font-weight: 400;
       line-height: 1.5;
       background-clip: padding-box;
       border: 1px solid variable.$border-color;
       border: 1px solid var(--border-color);
+      border-right: 0;
       transition:
         border-color 0.15s ease-in-out,
         box-shadow 0.15s ease-in-out;
@@ -300,22 +308,24 @@
 
       &.pdp-focus {
         outline: none;
-        border-bottom: 2px solid variable.$primary-color;
-        border-bottom: 2px solid var(--primary-color);
+        // border-bottom: 2px solid variable.$primary-color;
+        // border-bottom: 2px solid var(--primary-color);
       }
     }
 
     .pdp-icon {
       padding: 0.375rem 0.75rem;
-      line-height: 1.5;
+      line-height: 2;
       font-size: 1rem;
       color: variable.$text-color;
       color: var(--text-color);
       background: variable.$icon-background;
       background: var(--icon-background);
+      background: none;
       border: 1px solid variable.$border-color;
       border: 1px solid var(--border-color);
-      max-height: calc(1.5em + 0.75rem + 2px);
+      border-left: 0;
+      max-height: calc(1.5em + 0.75rem + 12px);
 
       &:nth-of-type(2) {
         margin-left: -1px;
@@ -364,12 +374,14 @@
     background: var(--background);
     box-shadow: variable.$main-box-shadow;
     box-shadow: var(--main-box-shadow);
+    box-shadow: 0 0 8px #2320201a;
     z-index: variable.$z-index + 1;
     z-index: calc(var(--z-index) + 1);
+    border: 1px solid #e9eaeb;
     border-radius: variable.$radius;
     border-radius: var(--radius);
+    border-radius: 4px;
     transition: all 1s ease;
-    margin-top: 0.5rem;
     padding: 0.3rem 0.6rem;
     animation: start 0.1s;
 
@@ -514,6 +526,7 @@
       & > div:first-child {
         border-bottom: 1px solid variable.$border-color;
         border-bottom: 1px solid var(--border-color);
+        border-bottom: 0;
         margin-bottom: 0.5rem;
       }
 
@@ -530,6 +543,7 @@
           cursor: pointer;
           color: variable.$primary-color;
           color: var(--primary-color);
+          stroke: var(--primary-color);
           padding: 0 0.5rem;
         }
       }
@@ -569,10 +583,10 @@
           opacity: var(--disabled-opacity);
         }
 
-        .pdp-arrow:not(.disabled):hover {
-          opacity: variable.$disabled-opacity;
-          opacity: var(--disabled-opacity);
-        }
+        // .pdp-arrow:not(.disabled):hover {
+        //   opacity: variable.$disabled-opacity;
+        //   opacity: var(--disabled-opacity);
+        // }
       }
     }
 
@@ -582,6 +596,8 @@
       .pdp-date {
         display: flex;
         justify-content: center;
+        overflow: hidden;
+        max-width: 680px;
 
         .pdp-column {
           margin: 0 1rem;
@@ -591,6 +607,7 @@
             margin-bottom: 0.3rem;
             display: flex;
             justify-content: space-around;
+            gap: 0.25rem;
 
             .pdp-weekday {
               width: variable.$day-dimensions;
@@ -609,16 +626,20 @@
 
             .pdp-day {
               display: inline-flex;
+              flex-direction: column;
               justify-content: center;
               align-items: center;
-              margin: 0.1rem 0;
+              margin: 0.25rem;
               font-size: 0.8rem;
               width: variable.$day-dimensions;
               width: var(--day-dimensions);
+              width: 36px;
               height: variable.$day-dimensions;
               height: var(--day-dimensions);
+              height: 36px;
               border-radius: variable.$radius;
               border-radius: var(--radius);
+              border-radius: 50%;
               padding: 0;
               cursor: pointer;
               transition-property: background-color, box-shadow;
@@ -663,21 +684,23 @@
                 background: var(--in-range-background);
                 color: variable.$hover-color;
                 color: var(--hover-color);
-                border-radius: 0 !important;
+                border-radius: 50% !important;
               }
 
               &:not(.disabled):hover,
               &.today {
                 border: 2px solid variable.$primary-color;
                 border: 2px solid var(--primary-color);
+                border-radius: 50%;
               }
 
               &.tada {
-                animation: tada 1s;
-                background: variable.$secondary-color;
-                background: var(--secondary-color);
-                box-shadow: inset 0 4px 9px rgba(0, 0, 0, 0.24);
-                color: #000;
+                animation: datepicker-pulse 0.35s 3;
+                // background: variable.$secondary-color;
+                // background: var(--secondary-color);
+                // background: var(--in-range-background);
+                color: variable.$primary-color;
+                color: var(--primary-color);
                 position: relative;
                 z-index: 1;
               }
@@ -764,8 +787,9 @@
 
       .pdp-today,
       .pdp-submit {
+        min-width: 100px;
         font-size: 0.8rem;
-        padding: 0.25rem 0.5rem;
+        padding: 0.5rem;
         margin: 0 0.3rem;
         line-height: 1.5;
         color: variable.$background;
@@ -785,6 +809,7 @@
 
       > div {
         display: flex;
+        gap: 0.75rem;
       }
     }
 
@@ -832,5 +857,255 @@
   .pdp-auto {
     margin: auto;
     position: relative;
+  }
+}
+.textDominant {
+  color: #193660;
+}
+.bgDominant {
+  background-color: #193660;
+}
+.textError {
+  color: #f04438 !important;
+}
+.bgError {
+  background-color: #f04438;
+}
+.textLightGray {
+  color: #a4a7ae;
+}
+.bgLightGray {
+  background-color: #a4a7ae;
+}
+.pdp-header {
+  max-width: 680px;
+  overflow: hidden;
+}
+.textError.start-range,
+.textError.end-range {
+  color: white !important;
+}
+.pdp-day.in-range:hover {
+  border: 0 !important;
+}
+.fieldContainer {
+  position: relative;
+  border: 1px solid #ced4da;
+  border-right: 0;
+  border-radius: 4px;
+  cursor: pointer;
+  min-width: 200px;
+}
+.fieldContainer input {
+  background-color: transparent;
+  height: 30px !important;
+  top: 16px;
+  border: none !important;
+  outline: none;
+  cursor: pointer;
+}
+.placeHolder {
+  position: absolute;
+  top: 11px;
+  right: 0;
+  font-size: 14px;
+  font-weight: 400;
+  color: #181d27;
+  transition: 300ms ease;
+  -o-transition: 300ms ease;
+  -moz-transition: 300ms ease;
+  -webkit-transition: 300ms ease;
+}
+.moveUp {
+  top: 4px;
+  font-size: 10px;
+}
+.boldTitle {
+  font-weight: 700;
+  font-size: 16px;
+  color: #193660;
+}
+.smallContent {
+  font-weight: 400;
+  font-size: 16px;
+  color: #657894;
+  margin: 0 4px;
+}
+.changeLocaleBtn {
+  color: #2e90fa !important;
+  font-weight: 700;
+  font-size: 16px;
+}
+.ltrDir {
+  direction: ltr;
+}
+.pdp-footer.rtl {
+  direction: rtl;
+}
+.h-\[50px\] {
+  height: 50px;
+}
+.selectedDatesText {
+  display: flex;
+  gap: 0.5rem;
+  position: relative;
+  top: 1.25rem;
+  font-size: 14px;
+  font-weight: 400;
+  color: #181d27;
+}
+.hidden {
+  display: none;
+}
+.disabledBtn,
+.disabledBtn:hover {
+  background: #f5f5f5 !important;
+  color: #a4a7ae !important;
+  border: 1px solid #e9eaeb !important;
+  box-shadow: 0 1px 2px #0a0d120d !important;
+  cursor: not-allowed !important;
+  filter: brightness(1) !important;
+  -webkit-filter: brightness(1) !important;
+}
+.truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.max-w-\[200px\] {
+  max-width: 200px;
+}
+.dayPrice {
+  font-size: 10px;
+  color: gray;
+}
+.pdp-day.start-range .dayPrice,
+.pdp-day.end-range .dayPrice {
+  color: white;
+}
+
+.slide-left-enter-active,
+.slide-left-leave-active,
+.slide-right-enter-active,
+.slide-right-leave-active {
+  // transition: all 0.3s ease;
+  // -o-transition: all 0.3s ease;
+  // -moz-transition: all 0.3s ease;
+  // -webkit-transition: all 0.3s ease;
+  transition: transform 300ms linear;
+  // transform 300ms ease;
+  // opacity 200ms ease;
+  // will-change: transform;
+}
+.slide-right-enter-from {
+  transform: translateX(110%);
+  // opacity: 0;
+}
+.slide-right-leave-to {
+  transform: translateX(-110%);
+  // opacity: 0;
+}
+
+.slide-left-enter-from {
+  transform: translateX(-110%);
+  // opacity: 0;
+}
+.slide-left-leave-to {
+  transform: translateX(110%);
+  // opacity: 0;
+}
+@media screen AND (min-width: 1024px) {
+  .lg\:w-\[340px\] {
+    width: 340px;
+  }
+}
+@media screen AND (min-width: 768px) AND (max-width: 1023px) {
+  .pdp .pdp-picker .pdp-main .pdp-date .pdp-column .pdp-days .pdp-day {
+    margin: 1px;
+  }
+  .md\:w-\[300px\] {
+    width: 300px;
+  }
+}
+@media screen AND (min-width: 768px) {
+  .md\:hidden {
+    display: none !important;
+  }
+  .md\:h-\[109px\] {
+    height: 109px;
+  }
+}
+@media screen AND (max-width: 767px) {
+  .pdp .pdp-picker.rtl,
+  .pdp .pdp-picker.ltr,
+  .pdp .pdp-auto {
+    width: 100%;
+    height: 100%;
+  }
+  .pdp .pdp-picker .pdp-footer {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .max-md\:hidden {
+    display: none !important;
+  }
+  .pdp .pdp-picker .pdp-main {
+    max-height: 77vh;
+    overflow-y: auto;
+  }
+  .pdp .pdp-picker .pdp-main .pdp-date {
+    flex-direction: column;
+  }
+  .pdp .pdp-picker .pdp-main .pdp-date .pdp-column .pdp-days .pdp-day {
+    width: 30px;
+    height: 30px;
+  }
+  .pdp .pdp-picker .pdp-main .pdp-date .pdp-column .pdp-days .pdp-day.today {
+    font-size: 10px;
+  }
+  .max-md\:min-w-full {
+    min-width: 100% !important;
+  }
+  .pdp .pdp-picker .pdp-main .pdp-date .pdp-column {
+    text-align: center;
+  }
+  .pdp .pdp-picker .pdp-main .pdp-date .pdp-column .pdp-week {
+    justify-content: space-between;
+  }
+  .max-md\:flex {
+    display: flex;
+  }
+  .max-md\:justify-between {
+    justify-content: space-between;
+  }
+
+  .slide-left-enter-from {
+    transform: translateY(110%);
+    -o-transform: translateY(110%);
+    -ms-transform: translateY(110%);
+    -moz-transform: translateY(110%);
+    -webkit-transform: translateY(110%);
+  }
+  .slide-left-leave-to {
+    transform: translateY(-110%);
+    -o-transform: translateY(-110%);
+    -ms-transform: translateY(-110%);
+    -moz-transform: translateY(-110%);
+    -webkit-transform: translateY(-110%);
+  }
+
+  .slide-right-enter-from {
+    transform: translateY(-110%);
+    -o-transform: translateY(-110%);
+    -ms-transform: translateY(-110%);
+    -moz-transform: translateY(-110%);
+    -webkit-transform: translateY(-110%);
+  }
+  .slide-right-leave-to {
+    transform: translateY(110%);
+    -o-transform: translateY(110%);
+    -ms-transform: translateY(110%);
+    -moz-transform: translateY(110%);
+    -webkit-transform: translateY(110%);
   }
 }
