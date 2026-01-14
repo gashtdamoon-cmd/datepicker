@@ -4,6 +4,19 @@
   import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
   const windowWidth = ref(window.innerWidth);
   const modal = computed(() => windowWidth.value < 768);
+  const suggestedDates = ref([
+    '1404-10-24',
+    '1404-10-25',
+    '1404-10-26',
+    '1404-10-27',
+    '1404-11-8',
+    '1404-11-9',
+    '1404-11-10',
+    '1404-11-19',
+    '1404-11-20',
+    '1404-11-21',
+    '1404-11-22',
+  ]);
   const onResize = () => {
     windowWidth.value = window.innerWidth;
   };
@@ -20,6 +33,30 @@
   function disablePast(dateMoment: PersianDate) {
     return dateMoment.isBefore(now); // true یعنی این تاریخ غیرفعال بشه
   }
+  function generateCalendarData(daysCount, startPersianDate) {
+    return Array.from({ length: daysCount }, (_, i) => {
+      const d = startPersianDate.clone().addDay(i);
+
+      const year = d.year();
+      const month = d.month();
+      const day = d.date();
+
+      return {
+        year,
+        month,
+        day,
+        key: `${year}-${month}-${day}`,
+        value: Math.floor(Math.random() * 9000) + 1000,
+      };
+    });
+  }
+  const calendarData = generateCalendarData(60, now);
+  const calendarMap = computed(
+    () => new Map(calendarData.map((item) => [item.key, item])),
+  );
+  const minValue = computed(() =>
+    Math.min(...calendarData.map((item) => item.value)),
+  );
 </script>
 
 <template>
@@ -34,20 +71,67 @@
   >
     <DatePicker
       alt-name="rest"
-      locale="en,fa"
       mode="range"
       :modal="modal"
+      :windowWidth="windowWidth"
+      :selected-date-tool-tip="['ورود', 'خروج']"
+      :dates-not-be-same="{
+        value: true,
+        massage: 'تاریخ ورود و خروج، نباید  یکسان باشند',
+      }"
+      :minimum-duration-stay="{
+        duration: 5,
+        massage: `خطای حداقل مدت اقامت. حداقل مدت اقامت مجاز برابره با 5 روز`,
+      }"
+      :suggested-dates="suggestedDates"
+      :symbols="[
+        {
+          icon: {
+            type: 'img',
+            src: '/images/icons/icons8-discount.gif',
+            width: 20,
+            height: 20,
+          },
+          describtion: 'تخفیف کلون',
+          date: '1404-10-26',
+        },
+        {
+          icon: {
+            type: 'img',
+            src: '/images/icons/icons8-fire.gif',
+            width: 20,
+            height: 20,
+          },
+          describtion: '4شنبه سوزی',
+          date: '1404-12-27',
+        },
+        {
+          icon: {
+            type: 'symbol',
+            text: 'آیکن3',
+          },
+          describtion: 'توضیح آیکن3',
+        },
+        {
+          icon: {
+            type: 'symbol',
+            text: 'آیکن4',
+          },
+          describtion: 'توضیح آیکن4',
+        },
+      ]"
       :showPrice="true"
-      placeholder="بازه اقامت"
-      arrivalDateText="شروع اقامت"
-      departureDateText="پایان اقامت"
-      Submit-text="ثبت"
+      :dayPrice="calendarMap"
+      :minNumber="minValue"
       :disable="disablePast"
     ></DatePicker>
     <DatePicker
       alt-name="rest"
       mode="single"
       :modal="modal"
+      :windowWidth="windowWidth"
+      :suggested-dates="suggestedDates"
+      :selected-date-tool-tip="['ورود', 'خروج']"
       :showVacation="false"
       :showPrice="true"
       placeholder="تاریخ رفت"

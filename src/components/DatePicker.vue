@@ -31,7 +31,9 @@
           </slot>
         </div>
         <div class="fieldContainer" @click="showPicker('input', index)">
-          <span ref="placeHolder" class="placeHolder">{{ placeholder }}</span>
+          <span ref="placeHolder" class="placeHolder">{{
+            placeholder ?? lang.translations.placeholder
+          }}</span>
           <div ref="selectedDatesText" class="selectedDatesText hidden">
             <div
               v-if="mode == 'range' && selectedDates.length == 2"
@@ -55,7 +57,6 @@
           <input
             ref="inputs"
             v-model="displayValue[index]"
-            type="hidden"
             autocomplete="off"
             v-bind="attrs[input]"
             readonly="true"
@@ -124,6 +125,9 @@
                 {{ nowBtnText ?? lang.translations.now }}
               </button>
               <button
+                v-if="
+                  symbols == null || (symbols != null && windowWidth >= 768)
+                "
                 type="button"
                 :tabindex="tabIndex"
                 :class="color == undefined ? 'changeLocaleBtn' : ''"
@@ -146,7 +150,54 @@
                 </svg>
                 {{ langBtnText ?? lang.translations.text }}
               </button>
+              <img
+                v-if="symbols != null && windowWidth < 768"
+                ref="verticalDotsBtn"
+                src="/images/icons/dots-vertical.svg"
+                alt="dots-vertical"
+                class="dotsMenu"
+                @click="showMoreBox()"
+              />
             </div>
+            <ul
+              v-if="symbols != null && windowWidth < 768"
+              ref="moreBox"
+              class="moreBox hideBox"
+            >
+              <li>
+                <button
+                  type="button"
+                  :tabindex="tabIndex"
+                  :class="color == undefined ? 'changeLocaleBtn' : ''"
+                  @click="changeLocale"
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M21 11.5V8.8C21 7.11984 21 6.27976 20.673 5.63803C20.3854 5.07354 19.9265 4.6146 19.362 4.32698C18.7202 4 17.8802 4 16.2 4H7.8C6.11984 4 5.27976 4 4.63803 4.32698C4.07354 4.6146 3.6146 5.07354 3.32698 5.63803C3 6.27976 3 7.11984 3 8.8V17.2C3 18.8802 3 19.7202 3.32698 20.362C3.6146 20.9265 4.07354 21.3854 4.63803 21.673C5.27976 22 6.11984 22 7.8 22H12.5M21 10H3M16 2V6M8 2V6M18 21V15M15 18H21"
+                      :stroke="color == undefined ? '#2E90FA' : ''"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                  {{ langBtnText ?? lang.translations.text }}
+                </button>
+              </li>
+              <li
+                ref="symbolsGuideBtn"
+                class="symbolsGuideBtn"
+                @click="showSymbolsExplanation()"
+              >
+                <div class="infoIcon">!</div>
+                {{ symbolsGuide ?? lang.translations.symbolsGuide }}
+              </li>
+            </ul>
             <div class="bottom max-md:hidden h-[50px]">
               <button
                 tabindex="-1"
@@ -179,10 +230,9 @@
                       tabindex="-1"
                       @click="showPart('month')"
                     >
-                      {{
-                        months[onDisplay.clone().addMonth(i).month()].label
-                      }}</button
-                    ><button
+                      {{ months[onDisplay.clone().addMonth(i).month()].label }}
+                    </button>
+                    <button
                       class="pdp-year boldTitle"
                       type="button"
                       tabindex="-1"
@@ -229,15 +279,18 @@
                               class="pdp-month boldTitle"
                               type="button"
                               tabindex="-1"
+                              @click="showPart('month')"
                             >
                               {{
                                 months[onDisplay.clone().addMonth(i).month()]
                                   .label
-                              }}</button
-                            ><button
+                              }}
+                            </button>
+                            <button
                               class="pdp-year boldTitle"
                               type="button"
                               tabindex="-1"
+                              @click="showPart('year')"
                             >
                               {{ onDisplay.clone().addMonth(i).year() }}
                             </button>
@@ -255,7 +308,7 @@
                           {{ weekday }}
                         </div>
                       </div>
-                      <div class="pdp-days textDominant">
+                      <div class="days textDominant">
                         <div
                           v-for="(week, wIndex) in monthDays[i]"
                           :key="wIndex"
@@ -289,11 +342,60 @@
                               { 'end-range': day.endRange },
                               { disabled: day.disabled },
                               { 'in-range': day.inRange },
+                              {
+                                'suggested-dates':
+                                  suggestedDates != null &&
+                                  suggestedDates.includes(dayToKey(day)) &&
+                                  ((mode == 'single' &&
+                                    selectedDates.length == 0) ||
+                                    (mode == 'range' &&
+                                      selectedDates.length <= 1)),
+                              },
                             ]"
                             :value="day.val"
                             @click="selectDate(day.raw, 'date')"
                           >
-                            <div>
+                            <div
+                              v-if="
+                                !day.disabled && selectedDateToolTip != null
+                              "
+                              ref="tooltip"
+                              :class="[
+                                'tooltip',
+                                { showToolTip: day.startRange || day.endRange },
+                              ]"
+                            >
+                              {{
+                                mode == 'single'
+                                  ? selectedDateToolTip[0]
+                                  : selectedDates.length > 1 &&
+                                      !day.startRange &&
+                                      !day.endRange
+                                    ? selectedDateToolTip[0]
+                                    : selectedDates.length < 1 || day.startRange
+                                      ? selectedDateToolTip[0]
+                                      : selectedDateToolTip[1]
+                              }}
+                            </div>
+                            <template v-for="symbol in symbols">
+                              <div
+                                v-if="
+                                  symbols != null &&
+                                  symbol.icon.type == 'img' &&
+                                  symbol.date == dayToKey(day)
+                                "
+                                :key="symbol.icon.src"
+                                class="symbolWrapper"
+                              >
+                                <img
+                                  :src="symbol.icon.src"
+                                  alt=""
+                                  :width="symbol.icon.width"
+                                  :height="symbol.icon.height"
+                                />
+                              </div>
+                            </template>
+                            <div :class="[{ 'text-xs': day.today }]">
                               {{
                                 day.today
                                   ? (todayText ?? lang.translations.today)
@@ -301,10 +403,20 @@
                               }}
                             </div>
                             <div
-                              v-if="showPrice && !day.disabled"
-                              class="dayPrice"
+                              v-if="
+                                showPrice &&
+                                !day.disabled &&
+                                dayPrice != undefined &&
+                                dayPrice.get(dayToKey(day))
+                              "
+                              :class="[
+                                'dayPrice',
+                                minNumber == dayPrice.get(dayToKey(day)).value
+                                  ? 'textSuccess'
+                                  : '',
+                              ]"
                             >
-                              8500
+                              {{ dayPrice.get(dayToKey(day)).value }}
                             </div>
                           </div>
                         </div>
@@ -403,6 +515,26 @@
               </div>
             </div>
           </div>
+          <div
+            v-if="symbols != null"
+            ref="symbolsExplanation"
+            class="symbolsExplanation max-md:hideBox"
+          >
+            <ul class="symbols list">
+              <li v-for="symbol in symbols" :key="symbol.icon.src" class="item">
+                <span v-if="symbol.icon.type == 'img'">
+                  <img
+                    :src="symbol.icon.src"
+                    alt=""
+                    :width="symbol.icon.width"
+                    :height="symbol.icon.height"
+                  />
+                </span>
+                <span v-else>{{ symbol.icon.text }}</span>
+                <span>{{ symbol.describtion }}</span>
+              </li>
+            </ul>
+          </div>
           <div class="pdp-footer rtl">
             <div>
               <slot name="footer"></slot>
@@ -436,24 +568,9 @@
                 :tabindex="tabIndex"
                 @click="submitDate()"
               >
-                {{ SubmitText ?? lang.translations.submit }}&nbsp;
+                {{ submitText ?? lang.translations.submit }}&nbsp;
                 <span v-if="selectedDates.length > 1">
-                  {{
-                    Math.round(
-                      (((new Date(
-                        selectedDates[1].d.year,
-                        selectedDates[1].d.month - 1,
-                        selectedDates[1].d.date,
-                      ) as any) -
-                        new Date(
-                          selectedDates[0].d.year,
-                          selectedDates[0].d.month - 1,
-                          selectedDates[0].d.date,
-                        )) as any) / 86400000,
-                    ) +
-                    ' ' +
-                    lang.translations.night
-                  }}
+                  {{ modatEghamat + ' ' + lang.translations.night }}
                 </span>
               </button>
             </div>
@@ -528,9 +645,12 @@
     },
     inheritAttrs: false,
     props: {
+      windowWidth: {
+        type: Number,
+        default: 768,
+      },
       placeholder: {
         type: String,
-        default: 'تاریخ (ورود و خروج)',
       },
       arrivalDateText: {
         type: String,
@@ -544,10 +664,13 @@
       langBtnText: {
         type: String,
       },
+      symbolsGuide: {
+        type: String,
+      },
       todayText: {
         type: String,
       },
-      SubmitText: {
+      submitText: {
         type: String,
       },
       showVacation: {
@@ -557,6 +680,34 @@
       showPrice: {
         type: Boolean,
         default: false,
+      },
+      dayPrice: {
+        type: Object,
+        default: undefined,
+      },
+      minNumber: {
+        type: Number,
+        default: 0,
+      },
+      symbols: {
+        type: Object,
+        default: null,
+      },
+      selectedDateToolTip: {
+        type: Object,
+        default: null,
+      },
+      datesNotBeSame: {
+        type: Object,
+        default: null,
+      },
+      minimumDurationStay: {
+        type: Object,
+        default: null,
+      },
+      suggestedDates: {
+        type: Object,
+        default: null,
       },
 
       /**
@@ -714,7 +865,7 @@
        * @since 2.0.0
        */
       locale: {
-        default: 'fa,en',
+        default: 'fa,en,ar',
         type: String,
       },
 
@@ -830,6 +981,7 @@
         todayObj: null as PersianDate | object | null,
         shouldPrevent: false,
         lastScrollTop: 0,
+        modatEghamat: null as number | null,
       };
     },
     computed: {
@@ -1179,6 +1331,12 @@
       }
       window.addEventListener('resize', () => {
         this.documentWidth = window.innerWidth;
+        (this.$refs.moreBox as HTMLElement).classList.add('hideBox');
+        (this.$refs.moreBox as HTMLElement).removeAttribute('style');
+        (this.$refs.symbolsExplanation as HTMLElement).classList.add(
+          'max-md:hideBox',
+        );
+        (this.$refs.symbolsExplanation as HTMLElement).removeAttribute('style');
       });
       if (this.type != 'date') {
         this.onDisplay!.time(this.core as PersianDate);
@@ -1188,6 +1346,42 @@
         ?.flat()
         ?.find((item) => item.today === true);
       this.preventChangedMonth();
+      document.addEventListener('keyup', (e) => {
+        if (
+          ['Escape'].includes(e.key) ||
+          (window.innerWidth < 768 &&
+            ['ArrowLeft', 'ArrowRight'].includes(e.key))
+        ) {
+          this.hideDatePicker();
+          this.showYearSelect = false;
+          this.showMonthSelect = false;
+        }
+      });
+      document.addEventListener('click', (e) => {
+        if (this.$props.windowWidth < 768) {
+          if (e.target != (this.$refs.symbolsGuideBtn as HTMLElement)) {
+            (this.$refs.symbolsExplanation as HTMLElement).classList.add(
+              'max-md:hideBox',
+            );
+            (this.$refs.symbolsExplanation as HTMLElement).removeAttribute(
+              'style',
+            );
+          }
+          if (
+            (this.$refs.moreBox as HTMLElement) != undefined &&
+            !(this.$refs.moreBox as HTMLElement).classList.value.includes(
+              'hideBox',
+            ) &&
+            e.target != (this.$refs.verticalDotsBtn as HTMLElement) &&
+            e.target != (this.$refs.moreBox as HTMLElement) &&
+            e.target?.offsetParent != (this.$refs.moreBox as HTMLElement) &&
+            e.target != (this.$refs.symbolsExplanation as HTMLElement)
+          ) {
+            (this.$refs.moreBox as HTMLElement).classList.add('hideBox');
+            (this.$refs.moreBox as HTMLElement).removeAttribute('style');
+          }
+        }
+      });
     },
     methods: {
       preventChangedMonth() {
@@ -1252,10 +1446,10 @@
         const isBottom = el.scrollTop + el.clientHeight >= el.scrollHeight;
         if (isBottom) {
           this.changeSelectedMonth('add');
-          // el.scrollTop = el.scrollHeight - el.clientHeight - 2;
+          el.scrollTop = el.scrollHeight - el.clientHeight - 2;
         } else if (el.scrollTop < 1) {
           this.changeSelectedMonth('sub');
-          // el.scrollTop = 2;
+          el.scrollTop = 2;
         }
       },
       changeSelectedYear(year: number): void {
@@ -1338,7 +1532,11 @@
             this.inputName = 'secondInput';
           } else if (this.inputName === 'secondInput') {
             this.inputName = 'firstInput';
-            if (date.isSame(this.selectedDates[0] as PersianDate)) {
+            if (
+              this.$props.datesNotBeSame != null &&
+              this.$props.datesNotBeSame.value &&
+              date.isSame(this.selectedDates[0] as PersianDate)
+            ) {
               this.confirmSelectedDates = false;
               this.selectedDates = [];
               (this.$refs.selectedDatesText as HTMLElement[])[0].classList.add(
@@ -1351,7 +1549,7 @@
                 'disabled',
                 'disabled',
               );
-              alert('تاریخ ورود و خروج، نباید  یکسان باشند');
+              alert(this.$props.datesNotBeSame.massage);
             } else if (!date.isBefore(this.selectedDates[0] as PersianDate)) {
               this.selectedDates[1] = date;
             } else {
@@ -1367,6 +1565,35 @@
             this.inputName = 'secondInput';
           }
           if (this.selectedDates.length == 2) {
+            this.modatEghamat = Math.round(
+              (new Date(
+                this.selectedDates[1].d.year,
+                this.selectedDates[1].d.month - 1,
+                this.selectedDates[1].d.date,
+              ) -
+                new Date(
+                  this.selectedDates[0].d.year,
+                  this.selectedDates[0].d.month - 1,
+                  this.selectedDates[0].d.date,
+                )) /
+                86400000,
+            );
+            if (
+              this.$props.minimumDurationStay != null &&
+              this.modatEghamat < this.$props.minimumDurationStay.duration
+            ) {
+              this.selectedDates = [];
+              (this.$refs.pdpSubmit as HTMLElement).classList.add(
+                'disabledBtn',
+              );
+              (this.$refs.pdpSubmit as HTMLElement).setAttribute(
+                'disabled',
+                'disabled',
+              );
+              alert(this.$props.minimumDurationStay.massage);
+              return 0;
+            }
+
             (this.$refs.pdpMain as HTMLElement).removeEventListener(
               'mouseover',
               this.selectInRangeDate,
@@ -1409,6 +1636,21 @@
         }
         return 0;
       },
+      dayToKey(day: object) {
+        if (day.empty || !day.raw?.d) return null;
+        let { year, month, date } = day.raw.d;
+        // اگر تاریخ گریگورین بود → تبدیل به شمسی
+        if (day.raw.c === 'gregorian') {
+          const j = this.core
+            .clone()
+            .calendar('j')
+            .fromGregorian({ year, month, date });
+          year = j?.d.year;
+          month = j?.d.month;
+          date = j?.d.date;
+        }
+        return `${year}-${month}-${date}`;
+      },
       setModel(date?: PersianDate | PersianDate[] | string | string[]): void {
         if (date === undefined) {
           date = this.selectedDates.map((el) => {
@@ -1438,7 +1680,7 @@
         }
         if (this.type.includes('date'))
           this.$nextTick(() => {
-            document.querySelector('.pdp-day.today')!.classList.add('tada');
+            document.querySelector('.pdp-day.today')?.classList.add('tada');
             setTimeout(() => {
               document
                 .querySelector('.pdp-day.today')!
@@ -1784,6 +2026,32 @@
           date.calendar(calendar);
         }
         this.submitDate(false);
+      },
+      showMoreBox(): void {
+        (this.$refs.moreBox as HTMLElement).classList.toggle('hideBox');
+        (this.$refs.moreBox as HTMLElement).style.top = '2.5rem';
+        if ((this.$refs.moreBox as HTMLElement).className.includes('hideBox')) {
+          (this.$refs.moreBox as HTMLElement).removeAttribute('style');
+        }
+        (this.$refs.symbolsExplanation as HTMLElement).classList.add(
+          'max-md:hideBox',
+        );
+        (this.$refs.symbolsExplanation as HTMLElement).removeAttribute('style');
+      },
+      showSymbolsExplanation(): void {
+        (this.$refs.symbolsExplanation as HTMLElement).classList.toggle(
+          'max-md:hideBox',
+        );
+        (this.$refs.symbolsExplanation as HTMLElement).style.bottom = 0;
+        if (
+          (this.$refs.symbolsExplanation as HTMLElement).className.includes(
+            'max-md:hideBox',
+          )
+        ) {
+          (this.$refs.symbolsExplanation as HTMLElement).removeAttribute(
+            'style',
+          );
+        }
       },
       clear(inputName: Inputs): void {
         const inputIndex = inputName === 'firstInput' ? 0 : 1;

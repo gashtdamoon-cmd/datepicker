@@ -25,8 +25,10 @@ export const Core = {
         picker: 'rtl',
       },
       translations: {
+        placeholder: 'تاریخ (ورود و خروج)',
         label: 'شمسی',
-        text: 'تقویم میلادی',
+        text: 'ماه میلادی',
+        symbolsGuide: 'راهنمای نمادها',
         prevMonth: 'ماه قبل',
         nextMonth: 'ماه بعد',
         now: 'برو به امروز',
@@ -82,17 +84,19 @@ export const Core = {
         picker: 'ltr',
       },
       translations: {
+        placeholder: 'Date (in and out)',
         label: 'میلادی',
-        text: 'تقویم شمسی',
+        text: 'Lunar month',
+        symbolsGuide: 'symbols guide',
         prevMonth: 'Previous Month',
         nextMonth: 'Next Month',
-        now: 'برو به امروز',
-        submit: 'تایید',
-        arrivalDate: 'ورود',
-        departureDate: 'خروج',
+        now: 'Go to today',
+        submit: 'Confirm',
+        arrivalDate: 'dateIn',
+        departureDate: 'dateOut',
         /* use in shourcuts */
         // date-single
-        today: 'امروز',
+        today: 'Today',
         yesterday: 'Yesterday',
         tomorrow: 'Tomorrow',
         firstOfWeek: 'First of Week',
@@ -105,7 +109,66 @@ export const Core = {
         // time-single
         oneHourAgo: 'One Hour ago',
         oneHourLater: 'One Hour later',
-        night: 'شب',
+        night: 'Night',
+        midnight: 'Midnight',
+        midday: 'Midday',
+        // time-range
+        thisHour: 'This Hour',
+        prevHour: 'Previous Hour',
+        nextHour: 'Next Hour',
+        allDay: 'All Day',
+      },
+      inputFormat: '',
+      displayFormat: '',
+    },
+    ar: {
+      calendar: 'gregorian',
+      weekdays: ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'],
+      months: [
+        'January',
+        'February',
+        'March',
+        'April',
+        'May',
+        'June',
+        'July',
+        'August',
+        'September',
+        'October',
+        'November',
+        'December',
+      ],
+      dir: {
+        input: 'rtl',
+        picker: 'ltr',
+      },
+      translations: {
+        placeholder: 'التاريخ (الدخول والخروج)',
+        label: 'میلادی',
+        text: 'الشهر الشمسي',
+        symbolsGuide: 'دليل الرموز',
+        prevMonth: 'Previous Month',
+        nextMonth: 'Next Month',
+        now: 'اذهب إلى اليوم',
+        submit: 'تأكيد',
+        arrivalDate: 'تسجيل الدخول',
+        departureDate: 'مخرج',
+        /* use in shourcuts */
+        // date-single
+        today: 'اليوم',
+        yesterday: 'Yesterday',
+        tomorrow: 'Tomorrow',
+        firstOfWeek: 'First of Week',
+        lastOfWeek: 'Last of Week',
+        // date-range
+        thisWeek: 'This Week',
+        prevWeek: 'Previous Week',
+        nextWeek: 'Next Week',
+        thisMonth: 'This Month',
+        // time-single
+        oneHourAgo: 'One Hour ago',
+        oneHourLater: 'One Hour later',
+        night: 'ليلة',
         midnight: 'Midnight',
         midday: 'Midday',
         // time-range
@@ -144,6 +207,7 @@ export const Core = {
     switch (color) {
       case 'red':
         colors = {
+          'suggested-date-color': '#c7004c1a',
           'primary-color': '#c7004c',
           'secondary-color': '#ffaaaa',
           'in-range-background': '#ffd2d2',
@@ -151,6 +215,7 @@ export const Core = {
         break;
       case 'pink':
         colors = {
+          'suggested-date-color': '#e56ab31a',
           'primary-color': '#e56ab3',
           'secondary-color': '#ef87be',
           'in-range-background': '#fcbcd7',
@@ -158,6 +223,7 @@ export const Core = {
         break;
       case 'orange':
         colors = {
+          'suggested-date-color': '#ffa5001a',
           'primary-color': '#ffa500',
           'secondary-color': '#ffbe47',
           'in-range-background': '#ffe0a6',
@@ -165,6 +231,7 @@ export const Core = {
         break;
       case 'green':
         colors = {
+          'suggested-date-color': '#38a1691a',
           'primary-color': '#38a169',
           'secondary-color': '#89dda3',
           'in-range-background': '#c6f6d5',
@@ -172,6 +239,7 @@ export const Core = {
         break;
       case 'purple':
         colors = {
+          'suggested-date-color': '#7825d01a',
           'primary-color': '#7825d0',
           'secondary-color': '#c196ed',
           'in-range-background': '#d4baf3',
@@ -179,6 +247,7 @@ export const Core = {
         break;
       case 'gray':
         colors = {
+          'suggested-date-color': '#4948481a',
           'primary-color': '#494848',
           'secondary-color': '#909090',
           'in-range-background': '#b4b4b4',

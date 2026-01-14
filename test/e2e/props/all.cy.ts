@@ -76,7 +76,7 @@ describe('from and to props', () => {
     it('click on dates', () => {
       cy.get('.pdp-input').focus();
       for (let i = 1; i <= 30; i++) {
-        cy.get(`.pdp-days [value="${i}"]`).last().click();
+        cy.get(`.days [value="${i}"]`).last().click();
       }
       cy.get('.pdp-input').should('have.value', '');
     });
