@@ -130,7 +130,10 @@
                 "
                 type="button"
                 :tabindex="tabIndex"
-                :class="color == undefined ? 'changeLocaleBtn' : ''"
+                :class="[
+                  { changeLocaleBtn: color == undefined },
+                  { ltr: lang.language == 'english' },
+                ]"
                 @click="changeLocale"
               >
                 <svg
@@ -164,11 +167,16 @@
               ref="moreBox"
               class="moreBox hideBox"
             >
-              <li>
+              <li
+                :class="[
+                  { 'text-left': lang.language == 'english' },
+                  { rtl: lang.language != 'english' },
+                ]"
+              >
                 <button
                   type="button"
                   :tabindex="tabIndex"
-                  :class="color == undefined ? 'changeLocaleBtn' : ''"
+                  :class="[{ changeLocaleBtn: color == undefined }]"
                   @click="changeLocale"
                 >
                   <svg
@@ -191,7 +199,10 @@
               </li>
               <li
                 ref="symbolsGuideBtn"
-                class="symbolsGuideBtn"
+                :class="[
+                  'symbolsGuideBtn',
+                  { rtl: lang.language != 'english' },
+                ]"
                 @click="showSymbolsExplanation()"
               >
                 <div class="infoIcon">!</div>
@@ -357,24 +368,26 @@
                           >
                             <div
                               v-if="
-                                !day.disabled && selectedDateToolTip != null
+                                !day.disabled &&
+                                selectedDateToolTip != null &&
+                                selectedDateToolTip.display
                               "
                               ref="tooltip"
                               :class="[
                                 'tooltip',
-                                { showToolTip: day.startRange || day.endRange },
+                                { showSection: day.startRange || day.endRange },
                               ]"
                             >
                               {{
                                 mode == 'single'
-                                  ? selectedDateToolTip[0]
+                                  ? selectedDateToolTip.values[0]
                                   : selectedDates.length > 1 &&
                                       !day.startRange &&
                                       !day.endRange
-                                    ? selectedDateToolTip[0]
+                                    ? selectedDateToolTip.values[0]
                                     : selectedDates.length < 1 || day.startRange
-                                      ? selectedDateToolTip[0]
-                                      : selectedDateToolTip[1]
+                                      ? selectedDateToolTip.values[0]
+                                      : selectedDateToolTip.values[1]
                               }}
                             </div>
                             <template v-for="symbol in symbols">
@@ -518,7 +531,10 @@
           <div
             v-if="symbols != null"
             ref="symbolsExplanation"
-            class="symbolsExplanation max-md:hideBox"
+            :class="[
+              'symbolsExplanation max-md:hideBox',
+              { rtl: lang.language != 'english' },
+            ]"
           >
             <ul class="symbols list">
               <li v-for="symbol in symbols" :key="symbol.icon.src" class="item">
@@ -535,6 +551,25 @@
               </li>
             </ul>
           </div>
+          <ul
+            v-if="Object.keys(errorList).length > 0"
+            :class="['errors list', { rtl: lang.language != 'english' }]"
+          >
+            <li
+              v-for="(item, index) in Object.keys(errorList)"
+              :key="item"
+              ref="errorItem"
+              class="err"
+            >
+              <div class="box">
+                <div class="infoIcon">!</div>
+                <div>{{ errorList[item] }}</div>
+              </div>
+              <div class="close" @click="removedError(item, index)">
+                &times;
+              </div>
+            </li>
+          </ul>
           <div class="pdp-footer rtl">
             <div>
               <slot name="footer"></slot>
@@ -855,6 +890,10 @@
         validator: (val: string) => ['single', 'range'].includes(val),
       },
 
+      siteLanguage: {
+        type: String,
+        default: 'fa',
+      },
       /**
        * the locale of datepicker
        * @default "fa"
@@ -865,8 +904,8 @@
        * @since 2.0.0
        */
       locale: {
-        default: 'fa,en,ar',
         type: String,
+        default: 'fa,en',
       },
 
       /**
@@ -982,6 +1021,7 @@
         shouldPrevent: false,
         lastScrollTop: 0,
         modatEghamat: null as number | null,
+        errorList: {} as object,
       };
     },
     computed: {
@@ -1359,7 +1399,10 @@
       });
       document.addEventListener('click', (e) => {
         if (this.$props.windowWidth < 768) {
-          if (e.target != (this.$refs.symbolsGuideBtn as HTMLElement)) {
+          if (
+            e.target != (this.$refs.symbolsGuideBtn as HTMLElement) &&
+            (this.$refs.symbolsExplanation as HTMLElement) != undefined
+          ) {
             (this.$refs.symbolsExplanation as HTMLElement).classList.add(
               'max-md:hideBox',
             );
@@ -1549,7 +1592,9 @@
                 'disabled',
                 'disabled',
               );
-              alert(this.$props.datesNotBeSame.massage);
+              this.errorList.datesNotBeSame =
+                this.$props.datesNotBeSame.massage ??
+                this.lang.translations.datesNotBeSame;
             } else if (!date.isBefore(this.selectedDates[0] as PersianDate)) {
               this.selectedDates[1] = date;
             } else {
@@ -1590,7 +1635,9 @@
                 'disabled',
                 'disabled',
               );
-              alert(this.$props.minimumDurationStay.massage);
+              this.errorList.minimumDurationStay =
+                this.$props.minimumDurationStay.massage ??
+                `${this.lang.translations.minimumDurationStay} ${this.$props.minimumDurationStay.duration} ${this.lang.translations.day}`;
               return 0;
             }
 
@@ -1635,6 +1682,29 @@
           return 1;
         }
         return 0;
+      },
+      removedError(key: string, i: number) {
+        if (this.lang.language == 'english') {
+          (this.$refs.errorItem as HTMLElement[])[i].classList.add(
+            'fadeOutLeft',
+          );
+          setTimeout(() => {
+            delete this.errorList[key];
+            (this.$refs.errorItem as HTMLElement[])[i].classList.remove(
+              'fadeOutLeft',
+            );
+          }, 500);
+        } else {
+          (this.$refs.errorItem as HTMLElement[])[i].classList.add(
+            'fadeOutRight',
+          );
+          setTimeout(() => {
+            delete this.errorList[key];
+            (this.$refs.errorItem as HTMLElement[])[i].classList.remove(
+              'fadeOutRight',
+            );
+          }, 500);
+        }
       },
       dayToKey(day: object) {
         if (day.empty || !day.raw?.d) return null;

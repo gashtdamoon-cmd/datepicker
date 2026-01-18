@@ -4,6 +4,7 @@ import { Obj, Units, Langs, Shortcuts } from './types';
 export const Core = {
   langs: {
     fa: {
+      language: 'persian',
       calendar: 'jalali',
       weekdays: ['ش', 'ی', 'د', 'س', 'چ', 'پ', 'ج'],
       months: [
@@ -52,17 +53,24 @@ export const Core = {
         oneHourLater: 'یک ساعت بعد',
         night: 'شب',
         midnight: 'نیمه شب',
+        day: 'روز',
         midday: 'نیمروز',
         // time-range
         thisHour: 'این ساعت',
         prevHour: 'ساعت قبل',
         nextHour: 'ساعت بعد',
         allDay: 'تمام روز',
+        // range-error-massage
+        datesNotBeSame: 'تاریخ ابتدا و انتهای بازه نباید یکسان باشند',
+        minimumDurationStay: 'حداقل مدت بازه انتخابی مجاز برابر است با:',
+        // toolTip
+        selectedDateToolTip: ['رفت', 'برگشت'],
       },
       inputFormat: '',
       displayFormat: '',
     },
     en: {
+      language: 'english',
       calendar: 'gregorian',
       weekdays: ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'],
       months: [
@@ -86,7 +94,7 @@ export const Core = {
       translations: {
         placeholder: 'Date (in and out)',
         label: 'میلادی',
-        text: 'Lunar month',
+        text: 'jalali month',
         symbolsGuide: 'symbols guide',
         prevMonth: 'Previous Month',
         nextMonth: 'Next Month',
@@ -111,17 +119,24 @@ export const Core = {
         oneHourLater: 'One Hour later',
         night: 'Night',
         midnight: 'Midnight',
+        day: 'Day',
         midday: 'Midday',
         // time-range
         thisHour: 'This Hour',
         prevHour: 'Previous Hour',
         nextHour: 'Next Hour',
         allDay: 'All Day',
+        // range-error-massage
+        datesNotBeSame: 'start & end dates not be same',
+        minimumDurationStay: 'minimum selected range date is equal to:',
+        // toolTip
+        selectedDateToolTip: ['go', 'back'],
       },
       inputFormat: '',
       displayFormat: '',
     },
     ar: {
+      language: 'arabic',
       calendar: 'gregorian',
       weekdays: ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'],
       months: [
@@ -170,12 +185,18 @@ export const Core = {
         oneHourLater: 'One Hour later',
         night: 'ليلة',
         midnight: 'Midnight',
+        day: 'Day',
         midday: 'Midday',
         // time-range
         thisHour: 'This Hour',
         prevHour: 'Previous Hour',
         nextHour: 'Next Hour',
         allDay: 'All Day',
+        // range-error-massage
+        datesNotBeSame: 'start & end dates not be same',
+        minimumDurationStay: 'minimum selected range date is equal to:',
+        // toolTip
+        selectedDateToolTip: ['الرفت', 'البرگشت'],
       },
       inputFormat: '',
       displayFormat: '',

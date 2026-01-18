@@ -71,6 +71,7 @@ export type Formats = {
 export type Shortcuts = Obj<PersianDate[]>;
 export type Langs = {
   [locale: string]: {
+    language: string;
     calendar: Calendar;
     weekdays: FixedSizeArray<string, 7>;
     months: FixedSizeArray<string, 12>;
@@ -104,12 +105,18 @@ export type Langs = {
       oneHourLater: string;
       night: string;
       midnight: string;
+      day: string;
       midday: string;
       // time-range
       thisHour: string;
       prevHour: string;
       nextHour: string;
       allDay: string;
+      // range-error-massage
+      datesNotBeSame: string;
+      minimumDurationStay: string;
+      // toolTip
+      selectedDateToolTip: string[];
     };
     inputFormat: string;
     displayFormat: string;

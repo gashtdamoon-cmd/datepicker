@@ -33,7 +33,10 @@
   function disablePast(dateMoment: PersianDate) {
     return dateMoment.isBefore(now); // true یعنی این تاریخ غیرفعال بشه
   }
-  function generateCalendarData(daysCount, startPersianDate) {
+  function generateCalendarData(
+    daysCount: number,
+    startPersianDate: PersianDate,
+  ) {
     return Array.from({ length: daysCount }, (_, i) => {
       const d = startPersianDate.clone().addDay(i);
 
@@ -74,7 +77,11 @@
       mode="range"
       :modal="modal"
       :windowWidth="windowWidth"
-      :selected-date-tool-tip="['ورود', 'خروج']"
+      site-language="ar"
+      :selected-date-tool-tip="{
+        display: true,
+        values: ['ورود', 'خروج'],
+      }"
       :dates-not-be-same="{
         value: true,
         massage: 'تاریخ ورود و خروج، نباید  یکسان باشند',
@@ -131,7 +138,10 @@
       :modal="modal"
       :windowWidth="windowWidth"
       :suggested-dates="suggestedDates"
-      :selected-date-tool-tip="['ورود', 'خروج']"
+      :selected-date-tool-tip="{
+        display: true,
+        values: ['ورود', 'خروج'],
+      }"
       :showVacation="false"
       :showPrice="true"
       placeholder="تاریخ رفت"

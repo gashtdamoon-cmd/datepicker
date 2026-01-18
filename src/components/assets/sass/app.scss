@@ -930,7 +930,8 @@
 .boldTitle {
   font-weight: 700;
   font-size: 16px;
-  color: #193660;
+  color: variable.$primary-color;
+  color: var(--primary-color);
 }
 .smallContent {
   font-weight: 400;
@@ -1104,10 +1105,6 @@
   opacity: 1;
   visibility: visible;
 }
-.showToolTip {
-  opacity: 1;
-  visibility: visible;
-}
 .symbolsGuideBtn {
   display: flex;
   align-items: center;
@@ -1144,6 +1141,114 @@
 .suggested-dates {
   background: variable.$suggested-date-color;
   background: var(--suggested-date-color);
+}
+.errors.list {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0;
+  display: flex;
+  flex-direction: column;
+  row-gap: 0.25rem;
+}
+
+.err {
+  background-color: variable.$primary-color;
+  background-color: var(--primary-color);
+  color: white;
+  font-size: smaller;
+  padding: 0.5rem;
+  border-radius: 4px;
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+}
+.errors.list.rtl .err {
+  animation: fadeInRight 700ms ease;
+  -o-animation: fadeInRight 700ms ease;
+  -moz-animation: fadeInRight 700ms ease;
+  -webkit-animation: fadeInRight 700ms ease;
+}
+.errors.list .err {
+  animation: fadeInLeft 700ms ease;
+  -o-animation: fadeInLeft 700ms ease;
+  -moz-animation: fadeInLeft 700ms ease;
+  -webkit-animation: fadeInLeft 700ms ease;
+}
+
+.errors.list.rtl .fadeOutRight {
+  animation: fadeOutRight 700ms ease;
+  -o-animation: fadeOutRight 700ms ease;
+  -moz-animation: fadeOutRight 700ms ease;
+  -webkit-animation: fadeOutRight 700ms ease;
+}
+.errors.list .fadeOutLeft {
+  animation: fadeOutLeft 700ms ease;
+  -o-animation: fadeOutLeft 700ms ease;
+  -moz-animation: fadeOutLeft 700ms ease;
+  -webkit-animation: fadeOutLeft 700ms ease;
+}
+.box {
+  display: flex;
+  align-items: flex-end;
+  column-gap: 0.5rem;
+}
+.close {
+  font-size: 30px;
+  line-height: 20px;
+  cursor: pointer;
+}
+.showSection {
+  opacity: 1;
+  visibility: visible;
+}
+.rtl {
+  direction: rtl;
+}
+.ltr {
+  direction: ltr;
+}
+.text-left {
+  text-align: left;
+}
+@keyframes fadeInRight {
+  from {
+    right: -3rem;
+    opacity: 0;
+  }
+  to {
+    right: 0;
+    opacity: 1;
+  }
+}
+@keyframes fadeInLeft {
+  from {
+    left: -3rem;
+    opacity: 0;
+  }
+  to {
+    left: 0;
+    opacity: 1;
+  }
+}
+@keyframes fadeOutRight {
+  from {
+    right: 0;
+    opacity: 1;
+  }
+  to {
+    right: -3rem;
+    opacity: 0;
+  }
+}
+@keyframes fadeOutLeft {
+  from {
+    left: 0;
+    opacity: 1;
+  }
+  to {
+    left: -3rem;
+    opacity: 0;
+  }
 }
 @media screen AND (min-width: 1024px) {
   .lg\:w-\[340px\] {
@@ -1264,5 +1369,17 @@
   .pdp .pdp-picker .pdp-main .pdp-date .pdp-column .days .pdp-day {
     min-width: 30px;
     width: 10%;
+  }
+  .errors.list {
+    position: fixed;
+    bottom: 0;
+    right: 50%;
+    transform: translateX(50%);
+    -o-transform: translateX(50%);
+    -ms-transform: translateX(50%);
+    -moz-transform: translateX(50%);
+    -webkit-transform: translateX(50%);
+    width: 98%;
+    z-index: 1;
   }
 }
