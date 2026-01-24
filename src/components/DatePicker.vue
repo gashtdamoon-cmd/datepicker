@@ -31,7 +31,7 @@
           </slot>
         </div>
         <div class="fieldContainer" @click="showPicker('input', index)">
-          <span ref="placeHolder" class="placeHolder">{{
+          <span ref="calendarPlaceHolder" class="placeHolder">{{
             placeholder ?? lang.translations.placeholder
           }}</span>
           <div ref="selectedDatesText" class="selectedDatesText hidden">
@@ -55,7 +55,7 @@
             </div>
           </div>
           <input
-            ref="inputs"
+            ref="inputsRef"
             v-model="displayValue[index]"
             autocomplete="off"
             v-bind="attrs[input]"
@@ -1009,7 +1009,7 @@
   // start refs
   const root = ref(null);
   const inputsRef = ref(null);
-  const placeHolder = ref(null);
+  const calendarPlaceHolder = ref(null);
   const pdpPicker = ref(null);
   const moreBox = ref(null);
   const symbolsExplanation = ref(null);
@@ -1055,10 +1055,10 @@
     }
     window.addEventListener('resize', () => {
       documentWidth.value = window.innerWidth;
-      moreBox.value.classList.add('hideBox');
-      moreBox.value.removeAttribute('style');
-      symbolsExplanation.value.classList.add('max-md:hideBox');
-      symbolsExplanation.value.removeAttribute('style');
+      moreBox.value?.classList.add('hideBox');
+      moreBox.value?.removeAttribute('style');
+      symbolsExplanation.value?.classList.add('max-md:hideBox');
+      symbolsExplanation.value?.removeAttribute('style');
     });
     if (props.type != 'date') {
       onDisplay.value!.time(core.value as PersianDate);
@@ -1563,6 +1563,7 @@
         inputName.value = 'secondInput';
       }
       if (selectedDates.value.length == 2) {
+        errorList.value = {};
         stayDuration.value = Math.round(
           (new Date(
             selectedDates.value[1].d.year,
@@ -1617,6 +1618,7 @@
       (props.mode !== 'range' ||
         (props.mode === 'range' && selectedDates.value.length == 2))
     ) {
+      // errorList.value = {};
       submitDate();
       return 1;
     }
@@ -1755,7 +1757,7 @@
     }
   }
   function showPicker(el: 'icon' | 'input', index: 0 | 1): void {
-    const placeHolder = placeHolder.value[index];
+    const placeHolder = calendarPlaceHolder.value[index];
     placeHolder.classList.add('moveUp');
     setTimeout(() => {
       if (!confirmSelectedDates.value) {
@@ -1779,7 +1781,7 @@
     preventChangedMonth();
   }
   function hideDatePicker(): void {
-    const placeHolders = placeHolder.value;
+    const placeHolders = calendarPlaceHolder.value;
     if (!confirmSelectedDates.value) {
       placeHolders[0].classList.remove('moveUp');
       selectedDates.value = [];
