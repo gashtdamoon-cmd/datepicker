@@ -355,7 +355,7 @@
                               { 'in-range': day.inRange },
                               {
                                 'suggested-dates':
-                                  suggestedDates != null &&
+                                  !day.disabled && suggestedDates != null &&
                                   suggestedDates.includes(dayToKey(day)) &&
                                   ((mode == 'single' &&
                                     selectedDates.length == 0) ||
@@ -529,7 +529,7 @@
             </div>
           </div>
           <div
-            v-if="symbols != null"
+            v-if="symbols != null && symbols.length > 0"
             ref="symbolsExplanation"
             :class="[
               'symbolsExplanation max-md:hideBox',
@@ -650,6 +650,7 @@
     computed,
     onMounted,
     onBeforeMount,
+    onBeforeUnmount,
     nextTick,
     watch,
   } from 'vue';
@@ -825,15 +826,6 @@
       type: String as PropType<'all' | 'input' | 'icon' | 'none'>,
       validator: (val: string) =>
         ['all', 'input', 'icon', 'none'].includes(val),
-    },
-    /**
-     * show the picker in modal mode
-     * @default true
-     * @type Boolean
-     */
-    modal: {
-      default: false,
-      type: Boolean,
     },
     /**
      * text for label tag
@@ -1022,10 +1014,14 @@
   const errorItem = ref(null);
   // end refs
 
+  onBeforeUnmount(() => {
+    window.removeEventListener('resize', onResize);
+  });
   onBeforeMount(() => {
     langs.value = Core.mergeObject(langs.value, props.localeConfig) as Langs;
   });
   onMounted(() => {
+    window.addEventListener('resize', onResize);
     Core.setColor(props.color, root.value);
     Core.setStyles(props.styles, root.value);
 
@@ -1109,7 +1105,7 @@
   watch(props.showDatePicker, (val) => {
     if (val) emit('open');
     else {
-      if (!props.modal) document.removeEventListener('scroll', locate());
+      if (!modal.value) document.removeEventListener('scroll', locate());
       emit('close');
     }
   });
@@ -1147,6 +1143,7 @@
   // end watch
 
   // start computed
+  const modal = computed(() => documentWidth.value < 768);
   const lang = computed(() => {
     return langs.value[currentLocale.value];
   });
@@ -1397,6 +1394,9 @@
   // end computed
 
   // start methods
+  function onResize() {
+    documentWidth.value = window.innerWidth;
+  };
   function preventChangedMonth() {
     if (
       (onDisplay.value != undefined &&
@@ -1771,7 +1771,7 @@
       if (props.dualInput) inputName.value = inputName;
       inputsRef.value[index].focus();
       showDatePicker.value = true;
-      if (!props.modal) {
+      if (!modal.value) {
         nextTick(() => {
           locate();
         });

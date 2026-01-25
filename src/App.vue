@@ -1,9 +1,8 @@
 <script lang="ts" setup>
   import DatePicker from './components/DatePicker.vue';
   import { PersianDate } from './components/utils/modules/core';
-  import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
-  const windowWidth = ref(window.innerWidth);
-  const modal = computed(() => windowWidth.value < 768);
+  import { ref, computed } from 'vue';
+  const now = new PersianDate().startOf('day');
   const suggestedDates = ref([
     '1404-10-24',
     '1404-10-25',
@@ -17,18 +16,50 @@
     '1404-11-21',
     '1404-11-22',
   ]);
-  const onResize = () => {
-    windowWidth.value = window.innerWidth;
-  };
-  onMounted(() => {
-    window.addEventListener('resize', onResize);
-  });
-  onBeforeUnmount(() => {
-    window.removeEventListener('resize', onResize);
-  });
-  const now = new PersianDate();
-  ['hour', 'minute', 'second', 'millisecond'].forEach((key) => {
-    now.d[key] = 0;
+  const symbols = computed(()=>{
+    let tmp = [
+      {
+        icon: {
+          type: 'img',
+          src: '/images/icons/icons8-discount.gif',
+          width: 20,
+          height: 20,
+        },
+        describtion: 'تخفیف کلون',
+        date: '1404-10-26',
+      },
+      {
+        icon: {
+          type: 'img',
+          src: '/images/icons/icons8-fire.gif',
+          width: 20,
+          height: 20,
+        },
+        describtion: '4شنبه سوزی',
+        date: '1404-12-27',
+      },
+      {
+        icon: {
+          type: 'symbol',
+          text: 'آیکن3',
+        },
+        describtion: 'توضیح آیکن3',
+        date: '1404-12-19',
+      },
+      {
+        icon: {
+          type: 'symbol',
+          text: 'آیکن4',
+        },
+        describtion: 'توضیح آیکن4',
+        date: '1404-11-15',
+      }
+    ];
+    tmp = tmp.filter(item => {
+      const itemDate = new PersianDate().parse(item.date, 'YYYY-MM-DD');
+      return itemDate.isAfter(now);
+    });
+    return tmp;
   });
   function disablePast(dateMoment: PersianDate) {
     return dateMoment.isBefore(now); // true یعنی این تاریخ غیرفعال بشه
@@ -45,9 +76,6 @@
       const day = d.date();
 
       return {
-        year,
-        month,
-        day,
         key: `${year}-${month}-${day}`,
         value: Math.floor(Math.random() * 9000) + 1000,
       };
@@ -74,6 +102,7 @@
   >
     <DatePicker
       alt-name="rest"
+      label="تقویم بازه‌ای"
       mode="range"
       :modal="modal"
       :windowWidth="windowWidth"
@@ -91,42 +120,7 @@
         massage: `خطای حداقل مدت اقامت. حداقل مدت اقامت مجاز برابره با 5 روز`,
       }"
       :suggested-dates="suggestedDates"
-      :symbols="[
-        {
-          icon: {
-            type: 'img',
-            src: '/images/icons/icons8-discount.gif',
-            width: 20,
-            height: 20,
-          },
-          describtion: 'تخفیف کلون',
-          date: '1404-10-26',
-        },
-        {
-          icon: {
-            type: 'img',
-            src: '/images/icons/icons8-fire.gif',
-            width: 20,
-            height: 20,
-          },
-          describtion: '4شنبه سوزی',
-          date: '1404-12-27',
-        },
-        {
-          icon: {
-            type: 'symbol',
-            text: 'آیکن3',
-          },
-          describtion: 'توضیح آیکن3',
-        },
-        {
-          icon: {
-            type: 'symbol',
-            text: 'آیکن4',
-          },
-          describtion: 'توضیح آیکن4',
-        },
-      ]"
+      :symbols="symbols"
       :showPrice="true"
       :dayPrice="calendarMap"
       :minNumber="minValue"
@@ -134,6 +128,7 @@
     ></DatePicker>
     <DatePicker
       alt-name="rest"
+      label="تقویم سینگل"
       mode="single"
       :modal="modal"
       :windowWidth="windowWidth"
