@@ -104,8 +104,6 @@
       alt-name="rest"
       label="تقویم بازه‌ای"
       mode="range"
-      :modal="modal"
-      :windowWidth="windowWidth"
       site-language="ar"
       :selected-date-tool-tip="{
         display: true,
@@ -130,8 +128,6 @@
       alt-name="rest"
       label="تقویم سینگل"
       mode="single"
-      :modal="modal"
-      :windowWidth="windowWidth"
       :suggested-dates="suggestedDates"
       :selected-date-tool-tip="{
         display: true,
