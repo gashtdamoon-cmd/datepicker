@@ -355,7 +355,8 @@
                               { 'in-range': day.inRange },
                               {
                                 'suggested-dates':
-                                  !day.disabled && suggestedDates != null &&
+                                  !day.disabled &&
+                                  suggestedDates != null &&
                                   suggestedDates.includes(dayToKey(day)) &&
                                   ((mode == 'single' &&
                                     selectedDates.length == 0) ||
@@ -1396,7 +1397,7 @@
   // start methods
   function onResize() {
     documentWidth.value = window.innerWidth;
-  };
+  }
   function preventChangedMonth() {
     if (
       (onDisplay.value != undefined &&

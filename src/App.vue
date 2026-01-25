@@ -16,7 +16,7 @@
     '1404-11-21',
     '1404-11-22',
   ]);
-  const symbols = computed(()=>{
+  const symbols = computed(() => {
     let tmp = [
       {
         icon: {
@@ -53,9 +53,9 @@
         },
         describtion: 'توضیح آیکن4',
         date: '1404-11-15',
-      }
+      },
     ];
-    tmp = tmp.filter(item => {
+    tmp = tmp.filter((item) => {
       const itemDate = new PersianDate().parse(item.date, 'YYYY-MM-DD');
       return itemDate.isAfter(now);
     });
