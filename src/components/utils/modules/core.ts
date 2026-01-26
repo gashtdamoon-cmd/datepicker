@@ -130,7 +130,7 @@ export const Core = {
         datesNotBeSame: 'start & end dates not be same',
         minimumDurationStay: 'minimum selected range date is equal to:',
         // toolTip
-        selectedDateToolTip: ['go', 'back'],
+        selectedDateToolTip: ['Went', 'Returned'],
       },
       inputFormat: '',
       displayFormat: '',
@@ -185,7 +185,7 @@ export const Core = {
         oneHourLater: 'One Hour later',
         night: 'ليلة',
         midnight: 'Midnight',
-        day: 'Day',
+        day: 'يوم',
         midday: 'Midday',
         // time-range
         thisHour: 'This Hour',
@@ -193,10 +193,10 @@ export const Core = {
         nextHour: 'Next Hour',
         allDay: 'All Day',
         // range-error-massage
-        datesNotBeSame: 'start & end dates not be same',
-        minimumDurationStay: 'minimum selected range date is equal to:',
+        datesNotBeSame: 'قد لا تتطابق تواريخ البدء والانتهاء.',
+        minimumDurationStay: 'الحد الأدنى لتاريخ النطاق المحدد يساوي:',
         // toolTip
-        selectedDateToolTip: ['الرفت', 'البرگشت'],
+        selectedDateToolTip: ['ذهب', 'عاد'],
       },
       inputFormat: '',
       displayFormat: '',
