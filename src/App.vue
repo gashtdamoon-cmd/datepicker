@@ -1,9 +1,13 @@
 <script lang="ts" setup>
   import DatePicker from './components/DatePicker.vue';
-  import { PersianDate } from './components/utils/modules/core';
   import { ref, computed } from 'vue';
-  const now = new PersianDate().startOf('day');
-  const suggestedDates = ref([
+  import { useDateUtils } from './composables/useDateUtils';
+  import { useCalendar } from './composables/useCalendar';
+
+  const { now, disablePast, isAfterToday } = useDateUtils();
+
+  /* suggested dates */
+  const suggestedDates = ref<string[]>([
     '1404-10-24',
     '1404-10-25',
     '1404-10-26',
@@ -16,8 +20,10 @@
     '1404-11-21',
     '1404-11-22',
   ]);
-  const symbols = computed(() => {
-    let tmp = [
+
+  /* symbols */
+  const symbols = computed(() =>
+    [
       {
         icon: {
           type: 'img',
@@ -54,40 +60,12 @@
         describtion: 'توضیح آیکن4',
         date: '1404-11-15',
       },
-    ];
-    tmp = tmp.filter((item) => {
-      const itemDate = new PersianDate().parse(item.date, 'YYYY-MM-DD');
-      return itemDate.isAfter(now);
-    });
-    return tmp;
-  });
-  function disablePast(dateMoment: PersianDate) {
-    return dateMoment.isBefore(now); // true یعنی این تاریخ غیرفعال بشه
-  }
-  function generateCalendarData(
-    daysCount: number,
-    startPersianDate: PersianDate,
-  ) {
-    return Array.from({ length: daysCount }, (_, i) => {
-      const d = startPersianDate.clone().addDay(i);
-
-      const year = d.year();
-      const month = d.month();
-      const day = d.date();
-
-      return {
-        key: `${year}-${month}-${day}`,
-        value: Math.floor(Math.random() * 9000) + 1000,
-      };
-    });
-  }
-  const calendarData = generateCalendarData(60, now);
-  const calendarMap = computed(
-    () => new Map(calendarData.map((item) => [item.key, item])),
+    ].filter((item) => isAfterToday(item.date)),
   );
-  const minValue = computed(() =>
-    Math.min(...calendarData.map((item) => item.value)),
-  );
+
+  /* calendar */
+  // calendarData,
+  const { calendarMap, minValue } = useCalendar(60, now);
 </script>
 
 <template>
@@ -107,15 +85,12 @@
       site-language="ar"
       :selected-date-tool-tip="{
         display: true,
-        values: ['ورود', 'خروج'],
       }"
       :dates-not-be-same="{
         value: true,
-        massage: 'تاریخ ورود و خروج، نباید  یکسان باشند',
       }"
       :minimum-duration-stay="{
         duration: 5,
-        massage: `خطای حداقل مدت اقامت. حداقل مدت اقامت مجاز برابره با 5 روز`,
       }"
       :suggested-dates="suggestedDates"
       :symbols="symbols"
