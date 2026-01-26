@@ -368,28 +368,14 @@
                             @click="selectDate(day.raw, 'date')"
                           >
                             <div
-                              v-if="
-                                !day.disabled &&
-                                selectedDateToolTip != null &&
-                                selectedDateToolTip.display
-                              "
+                              v-if="!day.disabled && resolvedToolTip?.display"
                               ref="tooltip"
                               :class="[
                                 'tooltip',
                                 { showSection: day.startRange || day.endRange },
                               ]"
                             >
-                              {{
-                                mode == 'single'
-                                  ? selectedDateToolTip.values[0]
-                                  : selectedDates.length > 1 &&
-                                      !day.startRange &&
-                                      !day.endRange
-                                    ? selectedDateToolTip.values[0]
-                                    : selectedDates.length < 1 || day.startRange
-                                      ? selectedDateToolTip.values[0]
-                                      : selectedDateToolTip.values[1]
-                              }}
+                              {{ getTooltipText(day) }}
                             </div>
                             <template v-for="symbol in symbols">
                               <div
@@ -884,7 +870,7 @@
      */
     locale: {
       type: String,
-      default: 'fa,en',
+      default: 'fa,en,ar',
     },
     /**
      * user can clear the selected dates or not
@@ -1392,9 +1378,41 @@
   const currentMonthKey = computed(() => {
     return `${onDisplay.value?.year()}-${onDisplay.value?.month()}`;
   }); //: string
+  const resolvedToolTip = computed(() => {
+    if (props.selectedDateToolTip && props.selectedDateToolTip.values) {
+      return props.selectedDateToolTip;
+    }
+
+    return {
+      display: props.selectedDateToolTip
+        ? props.selectedDateToolTip.display
+        : false,
+      values: [
+        langs.value[currentLocale.value].translations.selectedDateToolTip[0],
+        langs.value[currentLocale.value].translations.selectedDateToolTip[1],
+      ],
+    };
+  });
   // end computed
 
   // start methods
+  function getTooltipText(day) {
+    if (!resolvedToolTip.value?.display) return '';
+
+    if (props.mode === 'single') {
+      return resolvedToolTip.value.values[0];
+    }
+
+    if (selectedDates.value.length > 1 && !day.startRange && !day.endRange) {
+      return resolvedToolTip.value.values[0];
+    }
+
+    if (selectedDates.value.length < 1 || day.startRange) {
+      return resolvedToolTip.value.values[0];
+    }
+
+    return resolvedToolTip.value.values[1];
+  }
   function onResize() {
     documentWidth.value = window.innerWidth;
   }
