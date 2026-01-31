@@ -4,9 +4,9 @@ export function useDateUtils(disablePastDays: boolean) {
   const now = new PersianDate().startOf('day');
 
   function disablePast(dateMoment: PersianDate): boolean {
-    if(disablePastDays){
+    if (disablePastDays) {
       return dateMoment.isBefore(now);
-    }else{
+    } else {
       return false;
     }
   }

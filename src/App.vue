@@ -97,7 +97,7 @@
       :dayPrice="calendarMap"
       :minPrice="{
         value: minValue,
-        color: '#ff0097'
+        color: '#ff0097',
       }"
       :disable="disablePast"
     ></DatePicker>

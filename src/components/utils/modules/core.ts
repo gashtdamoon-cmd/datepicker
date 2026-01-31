@@ -134,7 +134,7 @@ export const Core = {
       },
       inputFormat: '',
       displayFormat: '',
-    }
+    },
   } as Langs,
   mergeObject: function (original: Obj, changed: Obj | undefined): Obj {
     const newObject = JSON.parse(JSON.stringify(original));

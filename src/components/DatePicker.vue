@@ -411,9 +411,19 @@
                               "
                               :class="[
                                 'dayPrice',
-                                {'textSuccess': minPrice.value == dayPrice.get(dayToKey(day)).value}
+                                {
+                                  textSuccess:
+                                    minPrice.value ==
+                                    dayPrice.get(dayToKey(day)).value,
+                                },
                               ]"
-                              :style="minPrice.color != undefined && minPrice.value == dayPrice.get(dayToKey(day)).value ? `color: ${minPrice.color} !important;` : null"
+                              :style="
+                                minPrice.color != undefined &&
+                                minPrice.value ==
+                                  dayPrice.get(dayToKey(day)).value
+                                  ? `color: ${minPrice.color} !important;`
+                                  : null
+                              "
                             >
                               {{ dayPrice.get(dayToKey(day)).value }}
                             </div>
@@ -710,7 +720,7 @@
       default: undefined,
     },
     minPrice: {
-      type: Object
+      type: Object,
     },
     symbols: {
       type: Object,
@@ -733,7 +743,7 @@
       default: null,
     },
     disablePastDays: {
-      type: Boolean
+      type: Boolean,
     },
     /**
      * the format of the model value
@@ -989,8 +999,8 @@
   const stayDuration = ref(null as number | null);
   const errorList = ref({} as object);
   // نگهداری تایمر هر خطا
-const errorTimers = new Map<string, number>();
-const ERROR_DURATION = 5000;
+  const errorTimers = new Map<string, number>();
+  const ERROR_DURATION = 5000;
   // start refs
   const root = ref(null);
   const inputsRef = ref(null);
@@ -1148,7 +1158,7 @@ const ERROR_DURATION = 5000;
         }
       });
     },
-    { deep: true }
+    { deep: true },
   );
   // end watch
 
@@ -1442,8 +1452,11 @@ const ERROR_DURATION = 5000;
   function preventChangedMonth() {
     if (
       props.disablePastDays &&
-      ((onDisplay.value != undefined && todayObj.value != undefined && onDisplay.value.year() < todayObj.value.raw.d.year) ||
-      (onDisplay.value.year() == todayObj.value.raw.d.year && onDisplay.value.month() <= todayObj.value.raw.d.month))
+      ((onDisplay.value != undefined &&
+        todayObj.value != undefined &&
+        onDisplay.value.year() < todayObj.value.raw.d.year) ||
+        (onDisplay.value.year() == todayObj.value.raw.d.year &&
+          onDisplay.value.month() <= todayObj.value.raw.d.month))
     ) {
       shouldPrevent.value = true;
     } else {
