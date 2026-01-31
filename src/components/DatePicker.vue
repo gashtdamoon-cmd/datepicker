@@ -126,7 +126,7 @@
               </button>
               <button
                 v-if="
-                  symbols == null || (symbols != null && windowWidth >= 768)
+                  symbols == null || (symbols != null && documentWidth >= 768)
                 "
                 type="button"
                 :tabindex="tabIndex"
@@ -154,7 +154,7 @@
                 {{ langBtnText ?? lang.translations.text }}
               </button>
               <img
-                v-if="symbols != null && windowWidth < 768"
+                v-if="symbols != null && documentWidth < 768"
                 ref="verticalDotsBtn"
                 src="/images/icons/dots-vertical.svg"
                 alt="dots-vertical"
@@ -163,7 +163,7 @@
               />
             </div>
             <ul
-              v-if="symbols != null && windowWidth < 768"
+              v-if="symbols != null && documentWidth < 768"
               ref="moreBox"
               class="moreBox hideBox"
             >
@@ -338,14 +338,14 @@
                               },
                               {
                                 'vacation friday':
-                                  showVacation &&
-                                  day.val == 20 &&
+                                  vacations != null &&
+                                  vacations.includes(dayToKey(day)) &&
                                   color != undefined,
                               },
                               {
                                 'vacation textError':
-                                  showVacation &&
-                                  day.val == 20 &&
+                                  vacations != null &&
+                                  vacations.includes(dayToKey(day)) &&
                                   color == undefined,
                               },
                               { today: day.today },
@@ -679,10 +679,6 @@
 
   const isClient = typeof window !== 'undefined';
   const props = defineProps({
-    windowWidth: {
-      type: Number,
-      default: 768,
-    },
     placeholder: {
       type: String,
     },
@@ -707,9 +703,9 @@
     submitText: {
       type: String,
     },
-    showVacation: {
-      type: Boolean,
-      default: true,
+    vacations: {
+      type: Object,
+      default: null
     },
     showPrice: {
       type: Boolean,
@@ -1080,7 +1076,7 @@
       }
     });
     document.addEventListener('click', (e) => {
-      if (props.windowWidth < 768) {
+      if (documentWidth.value < 768) {
         if (
           e.target != symbolsGuideBtn.value &&
           symbolsExplanation.value != undefined

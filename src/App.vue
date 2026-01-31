@@ -21,6 +21,7 @@
     '1404-11-21',
     '1404-11-22',
   ]);
+  const vacations = ref<string[]>(['1404-11-15', '1404-11-22', '1404-12-20']);
   /* symbols */
   const symbols = computed(() =>
     [
@@ -90,6 +91,7 @@
       :minimum-duration-stay="{
         duration: 5,
       }"
+      :vacations="vacations"
       :disable-past-days="disablePastDays"
       :suggested-dates="suggestedDates"
       :symbols="symbols"
