@@ -705,7 +705,7 @@
     },
     vacations: {
       type: Object,
-      default: null
+      default: null,
     },
     showPrice: {
       type: Boolean,
