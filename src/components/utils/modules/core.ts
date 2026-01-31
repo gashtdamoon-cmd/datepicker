@@ -134,73 +134,7 @@ export const Core = {
       },
       inputFormat: '',
       displayFormat: '',
-    },
-    ar: {
-      language: 'arabic',
-      calendar: 'gregorian',
-      weekdays: ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'],
-      months: [
-        'January',
-        'February',
-        'March',
-        'April',
-        'May',
-        'June',
-        'July',
-        'August',
-        'September',
-        'October',
-        'November',
-        'December',
-      ],
-      dir: {
-        input: 'rtl',
-        picker: 'ltr',
-      },
-      translations: {
-        placeholder: 'التاريخ (الدخول والخروج)',
-        label: 'میلادی',
-        text: 'الشهر الشمسي',
-        symbolsGuide: 'دليل الرموز',
-        prevMonth: 'Previous Month',
-        nextMonth: 'Next Month',
-        now: 'اذهب إلى اليوم',
-        submit: 'تأكيد',
-        arrivalDate: 'تسجيل الدخول',
-        departureDate: 'مخرج',
-        /* use in shourcuts */
-        // date-single
-        today: 'اليوم',
-        yesterday: 'Yesterday',
-        tomorrow: 'Tomorrow',
-        firstOfWeek: 'First of Week',
-        lastOfWeek: 'Last of Week',
-        // date-range
-        thisWeek: 'This Week',
-        prevWeek: 'Previous Week',
-        nextWeek: 'Next Week',
-        thisMonth: 'This Month',
-        // time-single
-        oneHourAgo: 'One Hour ago',
-        oneHourLater: 'One Hour later',
-        night: 'ليلة',
-        midnight: 'Midnight',
-        day: 'يوم',
-        midday: 'Midday',
-        // time-range
-        thisHour: 'This Hour',
-        prevHour: 'Previous Hour',
-        nextHour: 'Next Hour',
-        allDay: 'All Day',
-        // range-error-massage
-        datesNotBeSame: 'قد لا تتطابق تواريخ البدء والانتهاء.',
-        minimumDurationStay: 'الحد الأدنى لتاريخ النطاق المحدد يساوي:',
-        // toolTip
-        selectedDateToolTip: ['ذهب', 'عاد'],
-      },
-      inputFormat: '',
-      displayFormat: '',
-    },
+    }
   } as Langs,
   mergeObject: function (original: Obj, changed: Obj | undefined): Obj {
     const newObject = JSON.parse(JSON.stringify(original));

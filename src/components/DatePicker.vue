@@ -411,10 +411,9 @@
                               "
                               :class="[
                                 'dayPrice',
-                                minNumber == dayPrice.get(dayToKey(day)).value
-                                  ? 'textSuccess'
-                                  : '',
+                                {'textSuccess': minPrice.value == dayPrice.get(dayToKey(day)).value}
                               ]"
+                              :style="minPrice.color != undefined && minPrice.value == dayPrice.get(dayToKey(day)).value ? `color: ${minPrice.color} !important;` : null"
                             >
                               {{ dayPrice.get(dayToKey(day)).value }}
                             </div>
@@ -546,15 +545,17 @@
               v-for="(item, index) in Object.keys(errorList)"
               :key="item"
               ref="errorItem"
-              class="err"
             >
-              <div class="box">
-                <div class="infoIcon">!</div>
-                <div>{{ errorList[item] }}</div>
+              <div class="err">
+                <div class="box">
+                  <div class="infoIcon">!</div>
+                  <div>{{ errorList[item] }}</div>
+                </div>
+                <div class="close" @click="removedError(item, index)">
+                  &times;
+                </div>
               </div>
-              <div class="close" @click="removedError(item, index)">
-                &times;
-              </div>
+              <div class="barTime"></div>
             </li>
           </ul>
           <div class="pdp-footer rtl">
@@ -708,9 +709,8 @@
       type: Object,
       default: undefined,
     },
-    minNumber: {
-      type: Number,
-      default: 0,
+    minPrice: {
+      type: Object
     },
     symbols: {
       type: Object,
@@ -731,6 +731,9 @@
     suggestedDates: {
       type: Object,
       default: null,
+    },
+    disablePastDays: {
+      type: Boolean
     },
     /**
      * the format of the model value
@@ -863,14 +866,14 @@
      * the locale of datepicker
      * @default "fa"
      * @type String
-     * @values fa | en | fa,en |  en,fa
+     * @values fa | en | fa,en | en,fa
      * @desc Except above values, you can add
      *  	the language in "localeConfig" prop and use it.
      * @since 2.0.0
      */
     locale: {
       type: String,
-      default: 'fa,en,ar',
+      default: 'fa,en',
     },
     /**
      * user can clear the selected dates or not
@@ -985,6 +988,9 @@
   const lastScrollTop = ref(0);
   const stayDuration = ref(null as number | null);
   const errorList = ref({} as object);
+  // نگهداری تایمر هر خطا
+const errorTimers = new Map<string, number>();
+const ERROR_DURATION = 5000;
   // start refs
   const root = ref(null);
   const inputsRef = ref(null);
@@ -1003,6 +1009,8 @@
 
   onBeforeUnmount(() => {
     window.removeEventListener('resize', onResize);
+    errorTimers.forEach((timer) => clearTimeout(timer));
+    errorTimers.clear();
   });
   onBeforeMount(() => {
     langs.value = Core.mergeObject(langs.value, props.localeConfig) as Langs;
@@ -1127,6 +1135,21 @@
   watch(props.color, (val) => {
     Core.setColor(val, root.value);
   });
+  watch(
+    errorList,
+    (newErrors) => {
+      Object.keys(newErrors).forEach((key, i) => {
+        if (!errorTimers.has(key)) {
+          const timer = window.setTimeout(() => {
+            removedError(key, i);
+          }, ERROR_DURATION);
+
+          errorTimers.set(key, timer);
+        }
+      });
+    },
+    { deep: true }
+  );
   // end watch
 
   // start computed
@@ -1418,11 +1441,9 @@
   }
   function preventChangedMonth() {
     if (
-      (onDisplay.value != undefined &&
-        todayObj.value != undefined &&
-        onDisplay.value.year() < todayObj.value.raw.d.year) ||
-      (onDisplay.value.year() == todayObj.value.raw.d.year &&
-        onDisplay.value.month() <= todayObj.value.raw.d.month)
+      props.disablePastDays &&
+      ((onDisplay.value != undefined && todayObj.value != undefined && onDisplay.value.year() < todayObj.value.raw.d.year) ||
+      (onDisplay.value.year() == todayObj.value.raw.d.year && onDisplay.value.month() <= todayObj.value.raw.d.month))
     ) {
       shouldPrevent.value = true;
     } else {
@@ -1656,6 +1677,10 @@
         delete errorList.value[key];
         errorItem.value[i].classList.remove('fadeOutRight');
       }, 500);
+    }
+    if (errorTimers.has(key)) {
+      clearTimeout(errorTimers.get(key));
+      errorTimers.delete(key);
     }
   }
   function dayToKey(day: object) {

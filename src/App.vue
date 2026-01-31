@@ -4,8 +4,9 @@
   import { useDateUtils } from './composables/useDateUtils';
   import { useCalendar } from './composables/useCalendar';
 
-  const { now, disablePast, isAfterToday } = useDateUtils();
-
+  /* prevent disable past days or not */
+  const disablePastDays = true;
+  const { now, disablePast, isAfterToday } = useDateUtils(disablePastDays);
   /* suggested dates */
   const suggestedDates = ref<string[]>([
     '1404-10-24',
@@ -20,7 +21,6 @@
     '1404-11-21',
     '1404-11-22',
   ]);
-
   /* symbols */
   const symbols = computed(() =>
     [
@@ -62,9 +62,7 @@
       },
     ].filter((item) => isAfterToday(item.date)),
   );
-
   /* calendar */
-  // calendarData,
   const { calendarMap, minValue } = useCalendar(60, now);
 </script>
 
@@ -92,11 +90,15 @@
       :minimum-duration-stay="{
         duration: 5,
       }"
+      :disable-past-days="disablePastDays"
       :suggested-dates="suggestedDates"
       :symbols="symbols"
       :showPrice="true"
       :dayPrice="calendarMap"
-      :minNumber="minValue"
+      :minPrice="{
+        value: minValue,
+        color: '#ff0097'
+      }"
       :disable="disablePast"
     ></DatePicker>
     <DatePicker
