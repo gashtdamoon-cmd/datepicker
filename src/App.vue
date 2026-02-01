@@ -81,7 +81,6 @@
       alt-name="rest"
       label="تقویم بازه‌ای"
       mode="range"
-      site-language="ar"
       :selected-date-tool-tip="{
         display: true,
       }"

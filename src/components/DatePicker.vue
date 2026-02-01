@@ -31,9 +31,9 @@
           </slot>
         </div>
         <div class="fieldContainer" @click="showPicker('input', index)">
-          <span ref="calendarPlaceHolder" class="placeHolder">{{
-            placeholder ?? lang.translations.placeholder
-          }}</span>
+          <span ref="calendarPlaceHolder" class="placeHolder">
+            {{ placeholder ?? lang.translations.placeholder }}
+          </span>
           <div ref="selectedDatesText" class="selectedDatesText hidden">
             <div
               v-if="mode == 'range' && selectedDates.length == 2"
@@ -841,7 +841,7 @@
      * 		is not specified, the default value it's 2
      */
     column: {
-      default: () => ({ 576: 2 }),
+      default: () => ({ 576: 3 }),
       type: [Number, Object] as PropType<number | Record<number, number>>,
     },
     /**
@@ -863,10 +863,6 @@
       default: 'range',
       type: String as PropType<'single' | 'range'>,
       validator: (val: string) => ['single', 'range'].includes(val),
-    },
-    siteLanguage: {
-      type: String,
-      default: 'fa',
     },
     /**
      * the locale of datepicker
