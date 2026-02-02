@@ -381,7 +381,7 @@
                             ]"
                             :value="day.val"
                             :style="
-                              !selectedDateToolTip.display
+                              !selectedDateToolTip?.display
                                 ? 'border-radius: 50% !important;'
                                 : null
                             "
@@ -1486,7 +1486,7 @@
 
     return {
       display: props.selectedDateToolTip
-        ? props.selectedDateToolTip.display
+        ? props.selectedDateToolTip?.display
         : false,
       values: [
         langs.value[currentLocale.value].translations.selectedDateToolTip[0],
