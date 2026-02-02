@@ -132,9 +132,18 @@
                 :tabindex="tabIndex"
                 :class="[
                   { changeLocaleBtn: color == undefined },
-                  { ltr: lang.language == 'english' },
+                  { ltr: defaultLang == 'en' },
                 ]"
-                @click="changeLocale"
+                :style="
+                  !ableToChangeCalendar
+                    ? 'filter: grayscale(1);cursor: not-allowed;'
+                    : null
+                "
+                @click="
+                  () => {
+                    if (ableToChangeCalendar) changeLocale();
+                  }
+                "
               >
                 <svg
                   width="24"
@@ -169,15 +178,24 @@
             >
               <li
                 :class="[
-                  { 'text-left': lang.language == 'english' },
-                  { rtl: lang.language != 'english' },
+                  { 'text-left': defaultLang == 'en' },
+                  { rtl: defaultLang != 'en' },
                 ]"
               >
                 <button
                   type="button"
                   :tabindex="tabIndex"
                   :class="[{ changeLocaleBtn: color == undefined }]"
-                  @click="changeLocale"
+                  :style="
+                    !ableToChangeCalendar
+                      ? 'filter: grayscale(1);cursor: not-allowed;'
+                      : null
+                  "
+                  @click="
+                    () => {
+                      if (ableToChangeCalendar) changeLocale();
+                    }
+                  "
                 >
                   <svg
                     width="24"
@@ -199,10 +217,7 @@
               </li>
               <li
                 ref="symbolsGuideBtn"
-                :class="[
-                  'symbolsGuideBtn',
-                  { rtl: lang.language != 'english' },
-                ]"
+                :class="['symbolsGuideBtn', { rtl: defaultLang != 'en' }]"
                 @click="showSymbolsExplanation()"
               >
                 <div class="infoIcon">!</div>
@@ -365,6 +380,11 @@
                               },
                             ]"
                             :value="day.val"
+                            :style="
+                              !selectedDateToolTip.display
+                                ? 'border-radius: 50% !important;'
+                                : null
+                            "
                             @click="selectDate(day.raw, 'date')"
                           >
                             <div
@@ -529,7 +549,7 @@
             ref="symbolsExplanation"
             :class="[
               'symbolsExplanation max-md:hideBox',
-              { rtl: lang.language != 'english' },
+              { rtl: defaultLang != 'en' },
             ]"
           >
             <ul class="symbols list">
@@ -549,7 +569,7 @@
           </div>
           <ul
             v-if="Object.keys(errorList).length > 0"
-            :class="['errors list', { rtl: lang.language != 'english' }]"
+            :class="['errors list', { rtl: defaultLang != 'en' }]"
           >
             <li
               v-for="(item, index) in Object.keys(errorList)"
@@ -653,6 +673,8 @@
     watch,
   } from 'vue';
   import { PersianDate, Core } from './utils/modules/core';
+  import { calendarList } from './utils/modules/calendar';
+  import { Translations } from './utils/modules/lang';
   // ************************ Types ************************
   import type {
     Obj,
@@ -676,9 +698,16 @@
   import PDPIcon from './utils/components/PDPIcon.vue';
   import PDPAlt from './utils/components/PDPAlt.vue';
   // import { method } from 'cypress/types/bluebird';
-
   const isClient = typeof window !== 'undefined';
   const props = defineProps({
+    defaultLang: {
+      type: String,
+      default: 'fa',
+    },
+    ableToChangeCalendar: {
+      type: Boolean,
+      default: true,
+    },
     placeholder: {
       type: String,
     },
@@ -982,7 +1011,8 @@
   const pickerPlace = ref({} as PickerPlace);
   const documentWidth = ref(isClient ? window.innerWidth : Infinity);
   const langs = ref(Core.langs);
-  const currentLocale = ref(props.locale.split(',')[0]);
+  const entryLocale = ref(props.locale);
+  const currentLocale = ref(entryLocale.value.split(',')[0]);
   const interval = ref(null as ReturnType<typeof setInterval> | null);
   const submitedValue = ref([] as PersianDate[]);
   const todayObj = ref(null as PersianDate | object | null);
@@ -1093,6 +1123,52 @@
         }
       }
     });
+
+    const default_translations = Translations[props.defaultLang];
+    if (!Object.keys(Translations).includes(props.defaultLang)) {
+      Core.langs = {
+        en: {
+          ...calendarList.gregorian,
+          translations: { ...default_translations },
+        },
+        fa: {
+          ...calendarList.solar,
+          translations: { ...default_translations },
+        },
+      };
+      entryLocale.value = 'en,fa';
+      currentLocale.value = 'fa';
+    } else {
+      if (props.defaultLang == 'fa') {
+        Core.langs = {
+          fa: {
+            ...calendarList.solar,
+            translations: { ...default_translations },
+          },
+          en: {
+            ...calendarList.gregorian,
+            translations: { ...default_translations },
+          },
+        };
+        entryLocale.value = 'fa,en';
+        currentLocale.value = 'en';
+      } else {
+        Core.langs = {
+          en: {
+            ...calendarList.gregorian,
+            translations: { ...default_translations },
+          },
+          fa: {
+            ...calendarList.solar,
+            translations: { ...default_translations },
+          },
+        };
+        entryLocale.value = 'en,fa';
+        currentLocale.value = 'fa';
+      }
+    }
+    langs.value = Core.langs;
+    changeLocale();
   });
 
   // start watch
@@ -1306,7 +1382,7 @@
     return months;
   }); //: Months
   // const nextLocale = computed(() => {
-  //   const locales = props.locale.split(',');
+  //   const locales = entryLocale.value.split(',');
   //   const index = locales.indexOf(currentLocale.value);
   //   const locale = locales[index + 1] || locales[0];
   //   return langs.value[locale].translations.label;
@@ -2052,7 +2128,7 @@
     });
   }
   function changeLocale(): void {
-    const locales = props.locale.split(',');
+    const locales = entryLocale.value.split(',');
     const index = locales.indexOf(currentLocale.value);
     currentLocale.value = locales[index + 1] || locales[0];
     const calendar = lang.value.calendar;

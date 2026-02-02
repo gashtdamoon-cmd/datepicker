@@ -79,6 +79,8 @@
   >
     <DatePicker
       alt-name="rest"
+      default-lang="ar"
+      :able-to-change-calendar="false"
       label="تقویم بازه‌ای"
       mode="range"
       :selected-date-tool-tip="{
@@ -109,16 +111,9 @@
       :suggested-dates="suggestedDates"
       :selected-date-tool-tip="{
         display: true,
-        values: ['ورود', 'خروج'],
       }"
       :showVacation="false"
       :showPrice="true"
-      placeholder="تاریخ رفت"
-      arrivalDateText="رفت"
-      departureDateText=""
-      nowBtnText="الآن"
-      langBtnText="تغییر نوع تقویم"
-      todayText="امروز"
       color="green"
       :disable="disablePast"
     ></DatePicker>
