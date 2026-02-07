@@ -1518,18 +1518,39 @@
     documentWidth.value = window.innerWidth;
   }
   function preventChangedMonth() {
-    if (
-      props.disablePastDays &&
-      ((onDisplay.value != undefined &&
-        todayObj.value != undefined &&
-        onDisplay.value.year() < todayObj.value.raw.d.year) ||
-        (onDisplay.value.year() == todayObj.value.raw.d.year &&
-          onDisplay.value.month() <= todayObj.value.raw.d.month))
-    ) {
-      shouldPrevent.value = true;
-    } else {
+    const display = onDisplay.value;
+    const today = todayObj.value?.raw?.d;
+
+    // پیش‌شرط‌ها
+    if (!props.disablePastDays || !display || !today) {
       shouldPrevent.value = false;
+      return;
     }
+
+    // گرفتن سال و ماه نمایشی به فرم جلالی (برای یکسان‌سازی مقایسه)
+    let displayYear, displayMonth;
+
+    if (display.c === 'gregorian') {
+      const { year, month, date } = display.d;
+      const j = core.value
+        .clone()
+        .calendar('j')
+        .fromGregorian({ year, month, date });
+
+      displayYear = j.d.year;
+      displayMonth = j.d.month;
+    } else {
+      displayYear = display.year();
+      displayMonth = display.month();
+    }
+
+    const todayYear = today.year;
+    const todayMonth = today.month;
+
+    // منطق نهایی مقایسه
+    shouldPrevent.value =
+      displayYear < todayYear ||
+      (displayYear === todayYear && displayMonth <= todayMonth);
   }
   function showPart(part: CalendarPart): void {
     if (part == 'year') {
