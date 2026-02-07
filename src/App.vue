@@ -9,17 +9,17 @@
   const { now, disablePast, isAfterToday } = useDateUtils(disablePastDays);
   /* suggested dates */
   const suggestedDates = ref<string[]>([
-    '1404-10-24',
-    '1404-10-25',
-    '1404-10-26',
-    '1404-10-27',
-    '1404-11-8',
-    '1404-11-9',
-    '1404-11-10',
-    '1404-11-19',
-    '1404-11-20',
-    '1404-11-21',
+    '1404-12-1',
+    '1404-12-2',
+    '1404-12-3',
+    '1404-12-4',
     '1404-11-22',
+    '1404-11-23',
+    '1404-11-24',
+    '1404-12-19',
+    '1404-12-20',
+    '1404-12-21',
+    '1404-12-22'
   ]);
   const vacations = ref<string[]>(['1404-11-15', '1404-11-22', '1404-12-20']);
   /* symbols */
@@ -115,7 +115,6 @@
       :showVacation="false"
       :showPrice="true"
       color="green"
-      :disable="disablePast"
     ></DatePicker>
   </div>
 </template>
