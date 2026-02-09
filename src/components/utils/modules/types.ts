@@ -80,8 +80,10 @@ export type Langs = {
       picker: Dir;
     };
     translations: {
+      placeholder: string;
       label: string;
       text: string;
+      symbolsGuide: string;
       prevMonth: string;
       nextMonth: string;
       now: string;
@@ -113,8 +115,8 @@ export type Langs = {
       nextHour: string;
       allDay: string;
       // range-error-massage
-      datesNotBeSame: string;
-      minimumDurationStay: string;
+      preventSameDates: string;
+      minStay: string;
       // toolTip
       selectedDateToolTip: string[];
     };

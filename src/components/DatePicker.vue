@@ -122,11 +122,12 @@
                 :tabindex="tabIndex"
                 @click="goToToday"
               >
-                {{ nowBtnText ?? lang.translations.now }}
+                {{ currentDayBtnText ?? lang.translations.now }}
               </button>
               <button
                 v-if="
-                  symbols == null || (symbols != null && documentWidth >= 768)
+                  symbols.length == 0 ||
+                  (symbols.length > 0 && documentWidth >= 768)
                 "
                 type="button"
                 :tabindex="tabIndex"
@@ -160,10 +161,10 @@
                     stroke-linejoin="round"
                   />
                 </svg>
-                {{ langBtnText ?? lang.translations.text }}
+                {{ calendarTypeChangeBtnText ?? lang.translations.text }}
               </button>
               <img
-                v-if="symbols != null && documentWidth < 768"
+                v-if="symbols.length > 0 && documentWidth < 768"
                 ref="verticalDotsBtn"
                 src="/images/icons/dots-vertical.svg"
                 alt="dots-vertical"
@@ -172,7 +173,7 @@
               />
             </div>
             <ul
-              v-if="symbols != null && documentWidth < 768"
+              v-if="symbols.length > 0 && documentWidth < 768"
               ref="moreBox"
               class="moreBox hideBox"
             >
@@ -212,7 +213,7 @@
                       stroke-linejoin="round"
                     />
                   </svg>
-                  {{ langBtnText ?? lang.translations.text }}
+                  {{ calendarTypeChangeBtnText ?? lang.translations.text }}
                 </button>
               </li>
               <li
@@ -353,13 +354,13 @@
                               },
                               {
                                 'vacation friday':
-                                  vacations != null &&
+                                  vacations.length > 0 &&
                                   vacations.includes(dayToKey(day)) &&
                                   color != undefined,
                               },
                               {
                                 'vacation textError':
-                                  vacations != null &&
+                                  vacations.length > 0 &&
                                   vacations.includes(dayToKey(day)) &&
                                   color == undefined,
                               },
@@ -371,7 +372,7 @@
                               {
                                 'suggested-dates':
                                   !day.disabled &&
-                                  suggestedDates != null &&
+                                  suggestedDates.length > 0 &&
                                   suggestedDates.includes(dayToKey(day)) &&
                                   ((mode == 'single' &&
                                     selectedDates.length == 0) ||
@@ -381,14 +382,14 @@
                             ]"
                             :value="day.val"
                             :style="
-                              !selectedDateToolTip?.display
+                              !toolTip.enabled
                                 ? 'border-radius: 50% !important;'
                                 : null
                             "
                             @click="selectDate(day.raw, 'date')"
                           >
                             <div
-                              v-if="!day.disabled && resolvedToolTip?.display"
+                              v-if="!day.disabled && resolvedToolTip.enabled"
                               ref="tooltip"
                               :class="[
                                 'tooltip',
@@ -400,7 +401,7 @@
                             <template v-for="symbol in symbols">
                               <div
                                 v-if="
-                                  symbols != null &&
+                                  symbols.length > 0 &&
                                   symbol.icon.type == 'img' &&
                                   symbol.date == dayToKey(day)
                                 "
@@ -424,28 +425,30 @@
                             </div>
                             <div
                               v-if="
-                                showPrice &&
+                                pricing.show &&
                                 !day.disabled &&
-                                dayPrice != undefined &&
-                                dayPrice.get(dayToKey(day))
+                                pricing.byDay != null &&
+                                pricing.byDay.get(dayToKey(day))
                               "
                               :class="[
                                 'dayPrice',
                                 {
                                   textSuccess:
-                                    minPrice.value ==
-                                    dayPrice.get(dayToKey(day)).value,
+                                    pricing.min != null &&
+                                    pricing.min.value ==
+                                      pricing.byDay.get(dayToKey(day)).value,
                                 },
                               ]"
                               :style="
-                                minPrice.color != undefined &&
-                                minPrice.value ==
-                                  dayPrice.get(dayToKey(day)).value
-                                  ? `color: ${minPrice.color} !important;`
+                                pricing.min != null &&
+                                pricing.min.color != undefined &&
+                                pricing.min.value ==
+                                  pricing.byDay.get(dayToKey(day)).value
+                                  ? `color: ${pricing.min.color} !important;`
                                   : null
                               "
                             >
-                              {{ dayPrice.get(dayToKey(day)).value }}
+                              {{ pricing.byDay.get(dayToKey(day)).value }}
                             </div>
                           </div>
                         </div>
@@ -545,7 +548,7 @@
             </div>
           </div>
           <div
-            v-if="symbols != null && symbols.length > 0"
+            v-if="symbols.length > 0"
             ref="symbolsExplanation"
             :class="[
               'symbolsExplanation max-md:hideBox',
@@ -700,75 +703,178 @@
   // import { method } from 'cypress/types/bluebird';
   const isClient = typeof window !== 'undefined';
   const props = defineProps({
+    /**
+     * default language of site
+     * @default "fa"
+     * @type String
+     * @values fa | en | ar
+     */
     defaultLang: {
       type: String,
       default: 'fa',
     },
+    /**
+     * placeholder of calendar field.
+     * If not set, the default value from core file is used.
+     * @type String
+     */
+    placeholder: {
+      type: String,
+    },
+    /**
+     * arrival date label
+     * If not set, the default value from core file is used.
+     * @type String
+     */
+    arrivalDateText: {
+      type: String,
+    },
+    /**
+     * departure date label
+     * If not set, the default value from core file is used.
+     * @type String
+     */
+    departureDateText: {
+      type: String,
+    },
+    /**
+     * current day button label
+     * If not set, the default value from core file is used.
+     * @type String
+     */
+    currentDayBtnText: {
+      type: String,
+    },
+    /**
+     * changed type of calendar(Jalali to Gregorian or inverse)
+     * @default true
+     * @type Boolean
+     */
     ableToChangeCalendar: {
       type: Boolean,
       default: true,
     },
-    placeholder: {
+    /**
+     * calendar type change button label
+     * If not set, the default value from core file is used.
+     * @type String
+     */
+    calendarTypeChangeBtnText: {
       type: String,
     },
-    arrivalDateText: {
-      type: String,
-    },
-    departureDateText: {
-      type: String,
-    },
-    nowBtnText: {
-      type: String,
-    },
-    langBtnText: {
-      type: String,
-    },
+    /**
+     * Show symbols guide button label
+     * If not set, the default value from core file is used.
+     * @type String
+     */
     symbolsGuide: {
       type: String,
     },
+    /**
+     * current day text(today text)
+     * If not set, the default value from core file is used.
+     * @type String
+     */
     todayText: {
       type: String,
     },
-    submitText: {
-      type: String,
+    /**
+     * date price - show/hide price - min price
+     * @default {show:false,byDay:null,min:null}
+     * @type Object
+     */
+    pricing: {
+      type: Object,
+      default: () => ({
+        show: false,
+        byDay: null,
+        min: null,
+      }),
     },
+    /**
+     * list of days that are vacations. these dates must be with YYYY/jM/jD format (like this: ['1404-12-1','1404-12-2',...]).
+     * @type Object
+     * @default []
+     */
     vacations: {
-      type: Object,
-      default: null,
+      type: Array,
+      default: () => [],
     },
-    showPrice: {
-      type: Boolean,
-      default: false,
-    },
-    dayPrice: {
-      type: Object,
-      default: undefined,
-    },
-    minPrice: {
-      type: Object,
-    },
+    /**
+     * list of symbols.the structure like this:
+     * [{
+          icon: {
+            type: 'img',
+            src: '/images/icons/icons8-fire.gif',
+            width: 20,
+            height: 20,
+          },
+          describtion: '4شنبه سوزی',
+          date: '1404-12-27',
+        },
+        {
+          icon: {
+            type: 'symbol',
+            text: 'آیکن3',
+          },
+          describtion: 'توضیح آیکن3',
+          date: '1404-12-19',
+     *  }]
+     * @type Object
+     * @default []
+     */
     symbols: {
-      type: Object,
-      default: null,
+      type: Array,
+      default: () => [],
     },
-    selectedDateToolTip: {
-      type: Object,
-      default: null,
-    },
-    datesNotBeSame: {
-      type: Object,
-      default: null,
-    },
-    minimumDurationStay: {
-      type: Object,
-      default: null,
-    },
+    /**
+     * list of days that are Suggested to the user. these dates must be with YYYY/jM/jD format (like this: ['1404-12-1','1404-12-2',...]).
+     * @type Object
+     * @default []
+     */
     suggestedDates: {
-      type: Object,
-      default: null,
+      type: Array,
+      default: () => [],
     },
-    disablePastDays: {
-      type: Boolean,
+    /**
+     * list of tooltip. the structure like this: {enabled: true, labels: ['شروع', 'پایان']}.
+     * if labels not set or not valid, the default value from core file is used.
+     * @type Object
+     * @default {enabled:false,labels:[]}
+     */
+    toolTip: {
+      type: Object,
+      default: () => ({
+        enabled: false,
+        labels: [],
+      }),
+    },
+    /**
+     * preventSameDates error. the structure like this: {enabled: true, message: 'my massage...'}.
+     * if message not set, the default value from core file is used.
+     * @type Object
+     * @default {enabled:false,message:null}
+     */
+    preventSameDates: {
+      type: Object,
+      default: () => ({
+        enabled: false,
+        message: null,
+      }),
+    },
+    /**
+     * minStay error. the structure like this: {enabled: true, duration: 5, message: 'my massage...'}.
+     * duration must be set & if message not set, the default value from core file is used.
+     * @type Object
+     * @default {enabled:false,duration:0,message:null}
+     */
+    minStay: {
+      type: Object,
+      default: () => ({
+        enabled: false,
+        duration: 0,
+        message: null,
+      }),
     },
     /**
      * the format of the model value
@@ -861,7 +967,7 @@
     },
     /**
      * number of column
-     * @default "{ 576: 1 }"
+     * @default "{ 576: 3 }"
      * @type Object | Number
      * @desc 1. you can send the number of column
      *  	or send the object of the number of
@@ -872,6 +978,14 @@
     column: {
       default: () => ({ 576: 3 }),
       type: [Number, Object] as PropType<number | Record<number, number>>,
+    },
+    /**
+     * confirm button text
+     * If not set, the default value from core file is used.
+     * @type String
+     */
+    submitText: {
+      type: String,
     },
     /**
      * submit when date selected or not
@@ -914,6 +1028,13 @@
      */
     clearable: {
       default: false,
+      type: Boolean,
+    },
+    /**
+     * prevent to disable past days or not
+     * @type Boolean
+     */
+    disablePastDays: {
       type: Boolean,
     },
     /**
@@ -995,48 +1116,48 @@
   ]);
 
   const core = ref(new PersianDate());
-  const onDisplay = ref(undefined as PersianDate | undefined);
-  const fromDate = ref(undefined as PersianDate | undefined);
-  const toDate = ref(undefined as PersianDate | undefined);
-  const slideDirection = ref(null as string | null); // 'left' | 'right' | nul
-  const selectedDates = ref([] as PersianDate[]);
-  const confirmSelectedDates = ref(false);
-  const selectedTimes = ref([] as PersianDate[]);
-  const showDatePicker = ref(false);
-  const showYearSelect = ref(false);
-  const showMonthSelect = ref(false);
+  const onDisplay = ref<PersianDate | undefined>(undefined);
+  const fromDate = ref<PersianDate | undefined>(undefined);
+  const toDate = ref<PersianDate | undefined>(undefined);
+  const slideDirection = ref<string | null>(null); // 'left' | 'right' | null
+  const selectedDates = ref<PersianDate[]>([]);
+  const confirmSelectedDates = ref<boolean>(false);
+  const selectedTimes = ref<PersianDate[]>([]);
+  const showDatePicker = ref<boolean>(false);
+  const showYearSelect = ref<boolean>(false);
+  const showMonthSelect = ref<boolean>(false);
   // const showTopOfInput = ref(false);
-  const displayValue = ref([] as string[]);
-  const inputName = ref('firstInput' as Inputs);
-  const pickerPlace = ref({} as PickerPlace);
+  const displayValue = ref<string[]>([]);
+  const inputName = ref<Inputs>('firstInput');
+  const pickerPlace = ref<PickerPlace>({});
   const documentWidth = ref(isClient ? window.innerWidth : Infinity);
   const langs = ref(Core.langs);
   const entryLocale = ref(props.locale);
   const currentLocale = ref(entryLocale.value.split(',')[0]);
-  const interval = ref(null as ReturnType<typeof setInterval> | null);
-  const submitedValue = ref([] as PersianDate[]);
-  const todayObj = ref(null as PersianDate | object | null);
-  const shouldPrevent = ref(false);
-  const lastScrollTop = ref(0);
-  const stayDuration = ref(null as number | null);
-  const errorList = ref({} as object);
+  const interval = ref<ReturnType<typeof setInterval> | null>(null);
+  const submitedValue = ref<PersianDate[]>([]);
+  const todayObj = ref<PersianDate | object | null>(null);
+  const shouldPrevent = ref<boolean>(false);
+  const lastScrollTop = ref<number>(0);
+  const stayDuration = ref<number | null>(null);
+  const errorList = ref<Record<string, string>>({});
   // نگهداری تایمر هر خطا
   const errorTimers = new Map<string, number>();
   const ERROR_DURATION = 5000;
   // start refs
-  const root = ref(null);
-  const inputsRef = ref(null);
-  const calendarPlaceHolder = ref(null);
-  const pdpPicker = ref(null);
-  const moreBox = ref(null);
-  const symbolsExplanation = ref(null);
-  const symbolsGuideBtn = ref(null);
-  const verticalDotsBtn = ref(null);
-  const pdpSelectYear = ref(null);
-  const pdpMain = ref(null);
-  const selectedDatesText = ref(null);
-  const pdpSubmit = ref(null);
-  const errorItem = ref(null);
+  const root = ref<HTMLElement | null>(null);
+  const inputsRef = ref<HTMLElement | null>(null);
+  const calendarPlaceHolder = ref<HTMLElement | null>(null);
+  const pdpPicker = ref<HTMLElement | null>(null);
+  const moreBox = ref<HTMLElement | null>(null);
+  const symbolsExplanation = ref<HTMLElement | null>(null);
+  const symbolsGuideBtn = ref<HTMLElement | null>(null);
+  const verticalDotsBtn = ref<HTMLElement | null>(null);
+  const pdpSelectYear = ref<HTMLElement | null>(null);
+  const pdpMain = ref<HTMLElement | null>(null);
+  const selectedDatesText = ref<HTMLElement | null>(null);
+  const pdpSubmit = ref<HTMLElement | null>(null);
+  const errorItem = ref<HTMLElement | null>(null);
   // end refs
 
   onBeforeUnmount(() => {
@@ -1172,13 +1293,13 @@
   });
 
   // start watch
-  watch(props.show, (val) => {
+  watch(props.show, (val: boolean) => {
     showDatePicker.value = val;
   });
   watch(props.showDatePicker, (val) => {
     if (val) emit('open');
     else {
-      if (!modal.value) document.removeEventListener('scroll', locate());
+      if (!modal.value) document.removeEventListener('scroll', locate);
       emit('close');
     }
   });
@@ -1480,39 +1601,49 @@
     return `${onDisplay.value?.year()}-${onDisplay.value?.month()}`;
   }); //: string
   const resolvedToolTip = computed(() => {
-    if (props.selectedDateToolTip && props.selectedDateToolTip.values) {
-      return props.selectedDateToolTip;
+    const t = props.toolTip;
+    const isRange = props.mode === 'range';
+    const minLabels = isRange ? 2 : 1;
+
+    // آیا labels معتبر از سمت props اومده؟
+    const hasValidCustomLabels =
+      t?.labels && Array.isArray(t.labels) && t.labels.length >= minLabels;
+
+    if (hasValidCustomLabels) {
+      return t;
     }
 
+    // fallback
+    const defaultLabels =
+      langs.value[currentLocale.value].translations.selectedDateToolTip;
+
     return {
-      display: props.selectedDateToolTip
-        ? props.selectedDateToolTip?.display
-        : false,
-      values: [
-        langs.value[currentLocale.value].translations.selectedDateToolTip[0],
-        langs.value[currentLocale.value].translations.selectedDateToolTip[1],
-      ],
+      enabled: t?.enabled ?? false,
+      labels: isRange
+        ? [defaultLabels[0], defaultLabels[1]]
+        : [defaultLabels[0]],
     };
   });
+
   // end computed
 
   // start methods
-  function getTooltipText(day) {
-    if (!resolvedToolTip.value?.display) return '';
+  function getTooltipText(day: Obj) {
+    if (!resolvedToolTip.value?.enabled) return '';
 
     if (props.mode === 'single') {
-      return resolvedToolTip.value.values[0];
+      return resolvedToolTip.value.labels[0];
     }
 
     if (selectedDates.value.length > 1 && !day.startRange && !day.endRange) {
-      return resolvedToolTip.value.values[0];
+      return resolvedToolTip.value.labels[0];
     }
 
     if (selectedDates.value.length < 1 || day.startRange) {
-      return resolvedToolTip.value.values[0];
+      return resolvedToolTip.value.labels[0];
     }
 
-    return resolvedToolTip.value.values[1];
+    return resolvedToolTip.value.labels[1];
   }
   function onResize() {
     documentWidth.value = window.innerWidth;
@@ -1534,7 +1665,7 @@
       const { year, month, date } = display.d;
       const j = core.value
         .clone()
-        .calendar('j')
+        .calendar('jalali')
         .fromGregorian({ year, month, date });
 
       displayYear = j.d.year;
@@ -1559,9 +1690,9 @@
       if (showYearSelect.value) {
         nextTick(() => {
           const selectedYearTop = (
-            pdpSelectYear.value.querySelector('li.selected') as HTMLLIElement
+            pdpSelectYear.value?.querySelector('li.selected') as HTMLLIElement
           ).offsetTop;
-          pdpSelectYear.value.scroll({
+          pdpSelectYear.value?.scroll({
             top: selectedYearTop,
             behavior: 'smooth',
           });
@@ -1587,7 +1718,7 @@
   }
   function changeMonth() {
     preventChangedMonth();
-    const el = pdpMain.value;
+    const el = pdpMain.value as HTMLElement;
     const currentScrollTop = el.scrollTop;
     if (currentScrollTop > lastScrollTop.value) {
       shouldPrevent.value = false;
@@ -1667,8 +1798,8 @@
     if (props.mode == 'single') {
       selectedDates.value = [date];
       selectedDatesText.value[0].classList.remove('hidden');
-      pdpSubmit.value.classList.remove('disabledBtn');
-      pdpSubmit.value.removeAttribute('disabled');
+      pdpSubmit.value?.classList.remove('disabledBtn');
+      pdpSubmit.value?.removeAttribute('disabled');
       confirmSelectedDates.value = true;
     } else if (props.mode == 'range') {
       selectedDatesText.value[0].classList.add('hidden');
@@ -1678,18 +1809,19 @@
       } else if (inputName.value === 'secondInput') {
         inputName.value = 'firstInput';
         if (
-          props.datesNotBeSame != null &&
-          props.datesNotBeSame.value &&
+          props.preventSameDates.enabled &&
           date.isSame(selectedDates.value[0] as PersianDate)
         ) {
           confirmSelectedDates.value = false;
           selectedDates.value = [];
           selectedDatesText.value[0].classList.add('hidden');
-          pdpSubmit.value.classList.add('disabledBtn');
-          pdpSubmit.value.setAttribute('disabled', 'disabled');
-          errorList.value.datesNotBeSame =
-            props.datesNotBeSame.massage ??
-            lang.value.translations.datesNotBeSame;
+          pdpSubmit.value?.classList.add('disabledBtn');
+          pdpSubmit.value?.setAttribute('disabled', 'disabled');
+          errorList.value.preventSameDates =
+            props.preventSameDates.message != undefined &&
+            props.preventSameDates.message != null
+              ? props.preventSameDates.message
+              : lang.value.translations.preventSameDates;
         } else if (!date.isBefore(selectedDates.value[0] as PersianDate)) {
           selectedDates.value[1] = date;
         } else {
@@ -1720,22 +1852,23 @@
             86400000,
         );
         if (
-          props.minimumDurationStay != null &&
-          stayDuration.value < props.minimumDurationStay.duration
+          props.minStay.enabled &&
+          stayDuration.value < props.minStay.duration
         ) {
           selectedDates.value = [];
-          pdpSubmit.value.classList.add('disabledBtn');
-          pdpSubmit.value.setAttribute('disabled', 'disabled');
-          errorList.value.minimumDurationStay =
-            props.minimumDurationStay.massage ??
-            `${lang.value.translations.minimumDurationStay} ${props.minimumDurationStay.duration} ${lang.value.translations.day}`;
+          pdpSubmit.value?.classList.add('disabledBtn');
+          pdpSubmit.value?.setAttribute('disabled', 'disabled');
+          errorList.value.minStay =
+            props.minStay.message != undefined && props.minStay.message != null
+              ? props.minStay.message
+              : `${lang.value.translations.minStay} ${props.minStay.duration} ${lang.value.translations.day}`;
           return 0;
         }
 
-        pdpMain.value.removeEventListener('mouseover', this.selectInRangeDate);
+        pdpMain.value?.removeEventListener('mouseover', this.selectInRangeDate);
         selectedDatesText.value[0].classList.remove('hidden');
-        pdpSubmit.value.classList.remove('disabledBtn');
-        pdpSubmit.value.removeAttribute('disabled');
+        pdpSubmit.value?.classList.remove('disabledBtn');
+        pdpSubmit.value?.removeAttribute('disabled');
         confirmSelectedDates.value = true;
       }
     }
@@ -1749,8 +1882,8 @@
         return d;
       });
       selectedDatesText.value[0].classList.remove('hidden');
-      pdpSubmit.value.classList.remove('disabledBtn');
-      pdpSubmit.value.removeAttribute('disabled');
+      pdpSubmit.value?.classList.remove('disabledBtn');
+      pdpSubmit.value?.removeAttribute('disabled');
       confirmSelectedDates.value = true;
     }
 
@@ -1785,14 +1918,14 @@
       errorTimers.delete(key);
     }
   }
-  function dayToKey(day: object) {
-    if (day.empty || !day.raw?.d) return null;
+  function dayToKey(day: PersianDate | object) {
+    if (day.empty) return null;
     let { year, month, date } = day.raw.d;
     // اگر تاریخ گریگورین بود → تبدیل به شمسی
     if (day.raw.c === 'gregorian') {
       const j = core.value
         .clone()
-        .calendar('j')
+        .calendar('jalali')
         .fromGregorian({ year, month, date });
       year = j?.d.year;
       month = j?.d.month;
@@ -1908,8 +2041,8 @@
     setTimeout(() => {
       if (!confirmSelectedDates.value) {
         selectedDatesText.value[0].classList.add('hidden');
-        pdpSubmit.value.classList.add('disabledBtn');
-        pdpSubmit.value.setAttribute('disabled', 'disabled');
+        pdpSubmit.value?.classList.add('disabledBtn');
+        pdpSubmit.value?.setAttribute('disabled', 'disabled');
       }
     }, 10);
     if (props.clickOn == 'all' || props.clickOn == el) {
@@ -1921,7 +2054,7 @@
         nextTick(() => {
           locate();
         });
-        document.addEventListener('scroll', locate());
+        document.addEventListener('scroll', locate);
       }
     }
     preventChangedMonth();
@@ -1932,8 +2065,8 @@
       placeHolders[0].classList.remove('moveUp');
       selectedDates.value = [];
       selectedDatesText.value[0].classList.add('hidden');
-      pdpSubmit.value.classList.add('disabledBtn');
-      pdpSubmit.value.setAttribute('disabled', 'disabled');
+      pdpSubmit.value?.classList.add('disabledBtn');
+      pdpSubmit.value?.setAttribute('disabled', 'disabled');
     }
     showDatePicker.value = false;
   }
@@ -2163,18 +2296,18 @@
     submitDate(false);
   }
   function showMoreBox(): void {
-    moreBox.value.classList.toggle('hideBox');
+    moreBox.value?.classList.toggle('hideBox');
     moreBox.value.style.top = '2.5rem';
-    if (moreBox.value.className.includes('hideBox')) {
-      moreBox.value.removeAttribute('style');
+    if (moreBox.value?.className.includes('hideBox')) {
+      moreBox.value?.removeAttribute('style');
     }
-    symbolsExplanation.value.classList.add('max-md:hideBox');
-    symbolsExplanation.value.removeAttribute('style');
+    symbolsExplanation.value?.classList.add('max-md:hideBox');
+    symbolsExplanation.value?.removeAttribute('style');
   }
   function showSymbolsExplanation(): void {
-    symbolsExplanation.value.classList.toggle('max-md:hideBox');
+    symbolsExplanation.value?.classList.toggle('max-md:hideBox');
     symbolsExplanation.value.style.bottom = 0;
-    if (symbolsExplanation.value.className.includes('max-md:hideBox')) {
+    if (symbolsExplanation.value?.className.includes('max-md:hideBox')) {
       symbolsExplanation.value.removeAttribute('style');
     }
   }

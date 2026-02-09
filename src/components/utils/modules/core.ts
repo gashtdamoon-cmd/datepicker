@@ -61,8 +61,8 @@ export const Core = {
         nextHour: 'ساعت بعد',
         allDay: 'تمام روز',
         // range-error-massage
-        datesNotBeSame: 'تاریخ ابتدا و انتهای بازه نباید یکسان باشند',
-        minimumDurationStay: 'حداقل مدت بازه انتخابی مجاز برابر است با:',
+        preventSameDates: 'تاریخ ابتدا و انتهای بازه نباید یکسان باشند',
+        minStay: 'حداقل مدت بازه انتخابی مجاز برابر است با:',
         // toolTip
         selectedDateToolTip: ['رفت', 'برگشت'],
       },
@@ -127,8 +127,8 @@ export const Core = {
         nextHour: 'Next Hour',
         allDay: 'All Day',
         // range-error-massage
-        datesNotBeSame: 'start & end dates not be same',
-        minimumDurationStay: 'minimum selected range date is equal to:',
+        preventSameDates: 'start & end dates not be same',
+        minStay: 'minimum selected range date is equal to:',
         // toolTip
         selectedDateToolTip: ['Went', 'Returned'],
       },

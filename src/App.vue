@@ -79,28 +79,27 @@
   >
     <DatePicker
       alt-name="rest"
-      default-lang="ar"
-      :able-to-change-calendar="false"
       label="تقویم بازه‌ای"
       mode="range"
-      :selected-date-tool-tip="{
-        display: true,
+      :tool-tip="{ enabled: true, labels: ['شروع', 'پایان'] }"
+      :prevent-same-dates="{
+        enabled: true,
       }"
-      :dates-not-be-same="{
-        value: true,
-      }"
-      :minimum-duration-stay="{
+      :min-stay="{
+        enabled: true,
         duration: 5,
       }"
       :vacations="vacations"
       :disable-past-days="disablePastDays"
       :suggested-dates="suggestedDates"
       :symbols="symbols"
-      :showPrice="true"
-      :dayPrice="calendarMap"
-      :minPrice="{
-        value: minValue,
-        color: '#ff0097',
+      :pricing="{
+        show: true,
+        byDay: calendarMap,
+        min: {
+          value: minValue,
+          color: '#ff0097',
+        },
       }"
       :disable="disablePast"
     ></DatePicker>
@@ -108,12 +107,16 @@
       alt-name="rest"
       label="تقویم سینگل"
       mode="single"
+      :vacations="vacations"
       :suggested-dates="suggestedDates"
-      :selected-date-tool-tip="{
-        display: true,
+      :pricing="{
+        show: true,
+        byDay: calendarMap,
+        min: {
+          value: minValue,
+          color: '#ff0097',
+        },
       }"
-      :showVacation="false"
-      :showPrice="true"
       color="green"
     ></DatePicker>
   </div>
