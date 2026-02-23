@@ -117,8 +117,8 @@ export const Translations = {
     nextHour: 'الساعة التالية',
     allDay: 'طوال اليوم',
     // range-error-massage
-    datesNotBeSame: 'تاريخا البداية والنهاية غير متطابقين',
-    minimumDurationStay: 'أدنى تاريخ في النطاق المحدد يساوي:',
+    preventSameDates: 'تاريخا البداية والنهاية غير متطابقين',
+    minStay: 'أدنى تاريخ في النطاق المحدد يساوي:',
     // toolTip
     selectedDateToolTip: ['ذهب', 'عاد'],
   },

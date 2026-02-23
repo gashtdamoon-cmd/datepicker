@@ -1,4 +1,4 @@
-export const calendarList = {
+export const CalendarList = {
   solar: {
     language: 'persian',
     calendar: 'jalali',

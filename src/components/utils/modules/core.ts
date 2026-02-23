@@ -1,139 +1,42 @@
 import PersianDate from '@alireza-ab/persian-date';
 import { Obj, Units, Langs, Shortcuts } from './types';
+import { Translations } from './lang'
+import { CalendarList } from './calendar'
 
 export const Core = {
   langs: {
     fa: {
-      language: 'persian',
-      calendar: 'jalali',
-      weekdays: ['ش', 'ی', 'د', 'س', 'چ', 'پ', 'ج'],
-      months: [
-        'فروردین',
-        'اردیبهشت',
-        'خرداد',
-        'تیر',
-        'مرداد',
-        'شهریور',
-        'مهر',
-        'آبان',
-        'آذر',
-        'دی',
-        'بهمن',
-        'اسفند',
-      ],
-      dir: {
-        input: 'rtl',
-        picker: 'rtl',
-      },
-      translations: {
-        placeholder: 'تاریخ (ورود و خروج)',
-        label: 'شمسی',
-        text: 'ماه میلادی',
-        symbolsGuide: 'راهنمای نمادها',
-        prevMonth: 'ماه قبل',
-        nextMonth: 'ماه بعد',
-        now: 'برو به امروز',
-        submit: 'تایید',
-        arrivalDate: 'ورود',
-        departureDate: 'خروج',
-        /* use in shourcuts */
-        // date-single
-        today: 'امروز',
-        yesterday: 'دیروز',
-        tomorrow: 'فردا',
-        firstOfWeek: 'اول هفته',
-        lastOfWeek: 'آخر هفته',
-        // date-range
-        thisWeek: 'این هفته',
-        prevWeek: 'هفته قبل',
-        nextWeek: 'هفته بعد',
-        thisMonth: 'این ماه',
-        // time-single
-        oneHourAgo: 'یک ساعت قبل',
-        oneHourLater: 'یک ساعت بعد',
-        night: 'شب',
-        midnight: 'نیمه شب',
-        day: 'روز',
-        midday: 'نیمروز',
-        // time-range
-        thisHour: 'این ساعت',
-        prevHour: 'ساعت قبل',
-        nextHour: 'ساعت بعد',
-        allDay: 'تمام روز',
-        // range-error-massage
-        preventSameDates: 'تاریخ ابتدا و انتهای بازه نباید یکسان باشند',
-        minStay: 'حداقل مدت بازه انتخابی مجاز برابر است با:',
-        // toolTip
-        selectedDateToolTip: ['رفت', 'برگشت'],
-      },
-      inputFormat: '',
-      displayFormat: '',
+      language: CalendarList.solar.language,
+      calendar: CalendarList.solar.calendar,
+      weekdays: CalendarList.solar.weekdays,
+      months: CalendarList.solar.months,
+      dir: CalendarList.solar.dir,
+      inputFormat: CalendarList.solar.inputFormat,
+      displayFormat: CalendarList.solar.displayFormat,
+      // translation 
+      translations: Translations.fa,
     },
     en: {
-      language: 'english',
-      calendar: 'gregorian',
-      weekdays: ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'],
-      months: [
-        'January',
-        'February',
-        'March',
-        'April',
-        'May',
-        'June',
-        'July',
-        'August',
-        'September',
-        'October',
-        'November',
-        'December',
-      ],
-      dir: {
-        input: 'rtl',
-        picker: 'ltr',
-      },
-      translations: {
-        placeholder: 'Date (in and out)',
-        label: 'میلادی',
-        text: 'jalali month',
-        symbolsGuide: 'symbols guide',
-        prevMonth: 'Previous Month',
-        nextMonth: 'Next Month',
-        now: 'Go to today',
-        submit: 'Confirm',
-        arrivalDate: 'dateIn',
-        departureDate: 'dateOut',
-        /* use in shourcuts */
-        // date-single
-        today: 'Today',
-        yesterday: 'Yesterday',
-        tomorrow: 'Tomorrow',
-        firstOfWeek: 'First of Week',
-        lastOfWeek: 'Last of Week',
-        // date-range
-        thisWeek: 'This Week',
-        prevWeek: 'Previous Week',
-        nextWeek: 'Next Week',
-        thisMonth: 'This Month',
-        // time-single
-        oneHourAgo: 'One Hour ago',
-        oneHourLater: 'One Hour later',
-        night: 'Night',
-        midnight: 'Midnight',
-        day: 'Day',
-        midday: 'Midday',
-        // time-range
-        thisHour: 'This Hour',
-        prevHour: 'Previous Hour',
-        nextHour: 'Next Hour',
-        allDay: 'All Day',
-        // range-error-massage
-        preventSameDates: 'start & end dates not be same',
-        minStay: 'minimum selected range date is equal to:',
-        // toolTip
-        selectedDateToolTip: ['Went', 'Returned'],
-      },
-      inputFormat: '',
-      displayFormat: '',
+      language: CalendarList.gregorian.language,
+      calendar: CalendarList.gregorian.calendar,
+      weekdays: CalendarList.gregorian.weekdays,
+      months: CalendarList.gregorian.months,
+      dir: CalendarList.gregorian.dir,
+      inputFormat: CalendarList.gregorian.inputFormat,
+      displayFormat: CalendarList.gregorian.displayFormat,
+      // translation 
+      translations: Translations.en,
+    },
+    ar: {
+      language: CalendarList.gregorian.language,
+      calendar: CalendarList.gregorian.calendar,
+      weekdays: CalendarList.gregorian.weekdays,
+      months: CalendarList.gregorian.months,
+      dir: CalendarList.gregorian.dir,
+      inputFormat: CalendarList.gregorian.inputFormat,
+      displayFormat: CalendarList.gregorian.displayFormat,
+      // translation 
+      translations: Translations.ar,
     },
   } as Langs,
   mergeObject: function (original: Obj, changed: Obj | undefined): Obj {

@@ -575,16 +575,17 @@
             :class="['errors list', { rtl: defaultLang != 'en' }]"
           >
             <li
-              v-for="(item, index) in Object.keys(errorList)"
-              :key="item"
+              v-for="error in Object.keys(errorList)"
+              :key="error"
+              :id="`ErrorBox-${error}`"
               ref="errorItem"
             >
               <div class="err">
                 <div class="box">
                   <div class="infoIcon">!</div>
-                  <div>{{ errorList[item] }}</div>
+                  <div>{{ errorList[error] }}</div>
                 </div>
-                <div class="close" @click="removedError(item, index)">
+                <div class="close" @click="removedError(error)">
                   &times;
                 </div>
               </div>
@@ -676,7 +677,7 @@
     watch,
   } from 'vue';
   import { PersianDate, Core } from './utils/modules/core';
-  import { calendarList } from './utils/modules/calendar';
+  import { CalendarList } from './utils/modules/calendar';
   import { Translations } from './utils/modules/lang';
   // ************************ Types ************************
   import type {
@@ -1249,11 +1250,11 @@
     if (!Object.keys(Translations).includes(props.defaultLang)) {
       Core.langs = {
         en: {
-          ...calendarList.gregorian,
+          ...CalendarList.gregorian,
           translations: { ...default_translations },
         },
         fa: {
-          ...calendarList.solar,
+          ...CalendarList.solar,
           translations: { ...default_translations },
         },
       };
@@ -1263,11 +1264,11 @@
       if (props.defaultLang == 'fa') {
         Core.langs = {
           fa: {
-            ...calendarList.solar,
+            ...CalendarList.solar,
             translations: { ...default_translations },
           },
           en: {
-            ...calendarList.gregorian,
+            ...CalendarList.gregorian,
             translations: { ...default_translations },
           },
         };
@@ -1276,11 +1277,11 @@
       } else {
         Core.langs = {
           en: {
-            ...calendarList.gregorian,
+            ...CalendarList.gregorian,
             translations: { ...default_translations },
           },
           fa: {
-            ...calendarList.solar,
+            ...CalendarList.solar,
             translations: { ...default_translations },
           },
         };
@@ -1337,10 +1338,10 @@
   watch(
     errorList,
     (newErrors) => {
-      Object.keys(newErrors).forEach((key, i) => {
+      Object.keys(newErrors).forEach((key) => {
         if (!errorTimers.has(key)) {
           const timer = window.setTimeout(() => {
-            removedError(key, i);
+            removedError(key);
           }, ERROR_DURATION);
 
           errorTimers.set(key, timer);
@@ -1899,24 +1900,31 @@
     }
     return 0;
   }
-  function removedError(key: string, i: number) {
-    if (lang.value.language == 'english') {
-      errorItem.value[i].classList.add('fadeOutLeft');
-      setTimeout(() => {
-        delete errorList.value[key];
-        errorItem.value[i].classList.remove('fadeOutLeft');
-      }, 500);
-    } else {
-      errorItem.value[i].classList.add('fadeOutRight');
-      setTimeout(() => {
-        delete errorList.value[key];
-        errorItem.value[i].classList.remove('fadeOutRight');
-      }, 500);
+  const removingKeys = new Set<string>();
+  async function removedError(key: string) {
+    if (removingKeys.has(key)) return; // جلوگیری از اجرای همزمان
+    removingKeys.add(key);
+
+    const el = document.getElementById(`ErrorBox-${key}`);
+    if (!el) {
+      removingKeys.delete(key);
+      return;
     }
-    if (errorTimers.has(key)) {
-      clearTimeout(errorTimers.get(key));
-      errorTimers.delete(key);
-    }
+
+    const animationClass =
+      lang.value.language === 'english'
+        ? 'fadeOutLeft'
+        : 'fadeOutRight';
+
+    el.classList.add(animationClass);
+
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    delete errorList.value[key];
+    errorList.value = { ...errorList.value };
+
+    removingKeys.delete(key);
+    errorTimers.delete(key);
   }
   function dayToKey(day: PersianDate | object) {
     if (day.empty) return null;
